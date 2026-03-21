@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Search, Webhook, MessageSquare, Mail, Globe, Database, Calendar } from 'lucide-react';
+import { Search, Webhook, MessageSquare, Mail, Globe, Database, Calendar, GitBranch } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 // Mock list of integrations
 const INTEGRATIONS = [
   { id: 'webhook', name: 'Webhook', description: 'Trigger workflow on HTTP request', icon: Webhook, color: 'text-purple-500', bg: 'bg-purple-100', type: 'trigger' },
+  { id: 'binary', name: 'If Node', description: 'Split workflow based on conditions', icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50', type: 'logic' },
   { id: 'http', name: 'HTTP Request', description: 'Make a custom API call', icon: Globe, color: 'text-blue-500', bg: 'bg-blue-100', type: 'action' },
   { id: 'slack', name: 'Slack', description: 'Send or receive Slack messages', icon: MessageSquare, color: 'text-green-500', bg: 'bg-green-100', type: 'action' },
   { id: 'gmail', name: 'Gmail', description: 'Manage emails via Google Workspace', icon: Mail, color: 'text-red-500', bg: 'bg-red-100', type: 'action' },

@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) => {
+const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) => {
   return (
     <div 
       className={cn(
@@ -35,4 +35,4 @@ export const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) 
   );
 };
 
-export default ExitNode;
+export default memo(ExitNode);

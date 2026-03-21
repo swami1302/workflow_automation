@@ -25,14 +25,25 @@ const AVAILABLE_NODES = [
 export const EdgeConfigDialog = ({ edgeId }: EdgeConfigDialogProps) => {
   const [open, setOpen] = useState(false);
   const addNode = useWorkflowStore((state) => state.addNode);
+  const setSelectedEdgeId = useWorkflowStore((state) => state.setSelectedEdgeId);
 
-  const handleSelect = (type: string, label: string) => {
-    addNode(type, { label });
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen && edgeId) {
+      setSelectedEdgeId(edgeId);
+    } else if (!isOpen) {
+      setSelectedEdgeId(null);
+    }
+  };
+
+  const handleSelect = (type: string, node: any) => {
+    addNode(type, node);
     setOpen(false);
+    setSelectedEdgeId(null);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <button className="flex items-center justify-center w-6 h-6 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition-colors cursor-pointer group">
           <PlusCircle className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
@@ -49,7 +60,7 @@ export const EdgeConfigDialog = ({ edgeId }: EdgeConfigDialogProps) => {
             {AVAILABLE_NODES.map((node) => (
               <button
                 key={node.type}
-                onClick={() => handleSelect(node.type, node.label)}
+                onClick={() => handleSelect(node.type, node)}
                 className="flex items-center gap-3 p-3 text-left bg-white border border-gray-100 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all group cursor-pointer"
               >
                 <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${node.bg} shrink-0`}>

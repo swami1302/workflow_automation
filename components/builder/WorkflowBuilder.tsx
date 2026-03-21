@@ -15,7 +15,13 @@ import LogNode from '../nodes/log/LogNode';
 import DelayNode from '../nodes/delay/DelayNode';
 
 export const WorkflowBuilder = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useWorkflowStore();
+  const nodes = useWorkflowStore((state) => state.nodes);
+  const edges = useWorkflowStore((state) => state.edges);
+  const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
+  const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
+  const onConnect = useWorkflowStore((state) => state.onConnect);
+  const setSelectedNodeId = useWorkflowStore((state) => state.setSelectedNodeId);
+  const setSelectedEdgeId = useWorkflowStore((state) => state.setSelectedEdgeId);
 
   // Register custom node types with useMemo to prevent re-renders
   const nodeTypes = useMemo(() => ({
@@ -40,6 +46,11 @@ export const WorkflowBuilder = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+        onPaneClick={() => {
+          setSelectedNodeId(null);
+          setSelectedEdgeId(null);
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         colorMode="light"

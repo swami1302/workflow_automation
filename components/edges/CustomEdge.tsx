@@ -1,5 +1,5 @@
 import { BaseEdge, EdgeLabelRenderer, getStraightPath, type EdgeProps } from '@xyflow/react'
-import React from 'react'
+import React, { memo } from 'react'
 import { EdgeConfigDialog } from './EdgeConfigDialog'
 
 function CustomEdge({
@@ -42,4 +42,4 @@ function CustomEdge({
   )
 }
 
-export default CustomEdge
+export default memo(CustomEdge)
