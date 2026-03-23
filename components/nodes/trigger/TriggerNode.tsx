@@ -13,8 +13,8 @@ const TriggerNode = ({ data, selected }: { data: any, selected?: boolean }) => {
         selected ? "border-orange-500 ring-2 ring-orange-100 shadow-md" : "border-gray-200 hover:border-gray-300"
       )}
     >
-      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 shrink-0">
-        <Play className="w-4 h-4 text-green-600 fill-green-600" />
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 shrink-0">
+        <Play className="w-4 h-4 text-[#E8500A] fill-[#E8500A]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -29,7 +29,7 @@ const TriggerNode = ({ data, selected }: { data: any, selected?: boolean }) => {
       <Handle 
         type="source" 
         position={Position.Bottom} 
-        className="bg-white! w-3! h-3! border-2! border-green-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#E8500A]! hover:scale-125! transition-transform"
       />
     </div>
   );

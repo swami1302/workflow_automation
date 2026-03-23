@@ -17,7 +17,7 @@ export const BinaryNode = ({ id, data, selected }: { id: string, data: any, sele
       <DeleteBinaryDialog nodeId={id} />
 
       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 shrink-0">
-        <GitBranch className="w-4 h-4 text-purple-600" />
+        <GitBranch className="w-4 h-4 text-[#534AB7]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -33,7 +33,7 @@ export const BinaryNode = ({ id, data, selected }: { id: string, data: any, sele
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="bg-white! w-3! h-3! border-2! border-purple-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#534AB7]! hover:scale-125! transition-transform"
       />
 
       {/* Yes Output Handle & Label */}

@@ -28,7 +28,7 @@ const HttpNode = ({ id, data, selected }: { id: string, data: any, selected?: bo
       </button>
 
       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 shrink-0">
-        <Globe className="w-4 h-4 text-blue-600" />
+        <Globe className="w-4 h-4 text-[#185FA5]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -43,12 +43,12 @@ const HttpNode = ({ id, data, selected }: { id: string, data: any, selected?: bo
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="bg-white! w-3! h-3! border-2! border-blue-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#185FA5]! hover:scale-125! transition-transform"
       />
       <Handle 
         type="source" 
         position={Position.Bottom} 
-        className="bg-white! w-3! h-3! border-2! border-blue-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#185FA5]! hover:scale-125! transition-transform"
       />
     </div>
   );

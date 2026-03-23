@@ -27,8 +27,8 @@ const LogNode = ({ id, data, selected }: { id: string, data: any, selected?: boo
         <Trash2 className="w-3.5 h-3.5" />
       </button>
 
-      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 shrink-0">
-        <Terminal className="w-4 h-4 text-slate-600" />
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 shrink-0">
+        <Terminal className="w-4 h-4 text-[#3B6D11]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -43,12 +43,12 @@ const LogNode = ({ id, data, selected }: { id: string, data: any, selected?: boo
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="bg-white! w-3! h-3! border-2! border-slate-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#3B6D11]! hover:scale-125! transition-transform"
       />
       <Handle 
         type="source" 
         position={Position.Bottom} 
-        className="bg-white! w-3! h-3! border-2! border-slate-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#3B6D11]! hover:scale-125! transition-transform"
       />
     </div>
   );

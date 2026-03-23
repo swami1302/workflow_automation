@@ -13,8 +13,8 @@ const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) => {
         selected ? "border-orange-500 ring-2 ring-orange-100 shadow-md" : "border-gray-200 hover:border-gray-300"
       )}
     >
-      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 shrink-0">
-        <Square className="w-4 h-4 text-red-600 fill-red-600" />
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 shrink-0">
+        <Square className="w-4 h-4 text-[#5F5E5A] fill-[#5F5E5A]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -29,7 +29,7 @@ const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) => {
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="bg-white! w-3! h-3! border-2! border-red-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#5F5E5A]! hover:scale-125! transition-transform"
       />
     </div>
   );

@@ -25,6 +25,7 @@ type WorkflowStore = {
   setSelectedNodeId: (id: string | null) => void;
   setSelectedEdgeId: (id: string | null) => void;
   addNode: (type: string, data: any) => void;
+  updateNodeData: (nodeId: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
   deleteBinaryNode: (nodeId: string, option: 'yes-path' | 'no-path' | 'both') => void;
   getLayoutedElements: () => void;
@@ -32,6 +33,43 @@ type WorkflowStore = {
 
 const nodeWidth = 200;
 const nodeHeight = 80;
+
+const getInitialNodeData = (type: string, label?: string) => {
+  const baseLabel = label || `${type.charAt(0).toUpperCase() + type.slice(1)} Node`;
+  
+  switch (type) {
+    case 'trigger':
+      return { label: baseLabel, every: 1, unit: 'Minutes' };
+    case 'http':
+      return { 
+        label: baseLabel, 
+        method: 'GET', 
+        url: '', 
+        timeout: 5000, 
+        authType: 'None', 
+        headers: [], 
+        body: '',
+        followRedirects: true 
+      };
+    case 'binary':
+      return { 
+        label: baseLabel, 
+        conditions: [{ leftOperand: '', operator: '==', rightOperand: '', logicConnector: 'AND' }] 
+      };
+    case 'log':
+      return { 
+        label: baseLabel, 
+        logLevel: 'Info', 
+        messageTemplate: '', 
+        includeFullPayload: false, 
+        destination: 'Console' 
+      };
+    case 'delay':
+      return { label: baseLabel, duration: 1, unit: 'Minutes' };
+    default:
+      return { label: baseLabel };
+  }
+};
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   if (nodes.length === 0) return { nodes, edges };
@@ -75,7 +113,7 @@ const initialNodes: Node[] = [
     id: 'trigger-1', 
     type: 'trigger', 
     position: { x: 250, y: 100 }, 
-    data: { label: 'When trigger fires' } 
+    data: getInitialNodeData('trigger', 'When trigger fires')
   },
   { 
     id: 'exit-1', 
@@ -267,6 +305,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   addNode: (type, data) => {
     const { nodes, edges, selectedEdgeId } = get();
     const id = `${type}-${uuidv4()}`;
+    const initialData = getInitialNodeData(type, data?.label);
 
     let updatedNodes = [...nodes];
     let updatedEdges = [...edges];
@@ -282,7 +321,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
             id,
             type,
             position: { x: 0, y: 0 }, 
-            data,
+            data: initialData,
           };
 
           const edgeBefore: Edge = {
@@ -312,20 +351,22 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
 
           if (type === 'binary') {
             const exitId = `exit-${uuidv4()}`;
-            updatedNodes.push({
+            const binaryExitNode: Node = {
               id: exitId,
               type: 'exit',
               position: { x: 0, y: 0 },
               data: { label: 'End' },
-            });
-            updatedEdges.push({
+            };
+            const binaryExitEdge: Edge = {
               id: `e-${id}-${exitId}`,
               source: id,
               sourceHandle: 'no',
               target: exitId,
               animated: true,
               type: 'custom',
-            });
+            };
+            updatedNodes = [...updatedNodes, binaryExitNode];
+            updatedEdges = [...updatedEdges, binaryExitEdge];
           }
         }
       }
@@ -334,7 +375,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         id,
         type,
         position: { x: 0, y: 0 },
-        data,
+        data: initialData,
       };
       updatedNodes.push(newNode);
     }
@@ -347,6 +388,15 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     });
   },
 
+  updateNodeData: (nodeId, data) => {
+    set({
+      nodes: get().nodes.map((node) => 
+        node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
+      )
+    });
+  },
+
   setNodes: (nodes) => set({ nodes }),
+
   setEdges: (edges) => set({ edges }),
 }));

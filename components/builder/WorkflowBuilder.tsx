@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import { ReactFlow, Background, Panel, MiniMap, Controls } from '@xyflow/react';
+import React, { useMemo, useCallback } from 'react';
+import { ReactFlow, Background, Panel, MiniMap, Controls, useReactFlow, ReactFlowProvider } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkflowStore } from '@/store/useWorkflowStore';
 
@@ -14,7 +14,7 @@ import BinaryNode from '../nodes/Binary/BinaryNode';
 import LogNode from '../nodes/log/LogNode';
 import DelayNode from '../nodes/delay/DelayNode';
 
-export const WorkflowBuilder = () => {
+const WorkflowBuilderContent = () => {
   const nodes = useWorkflowStore((state) => state.nodes);
   const edges = useWorkflowStore((state) => state.edges);
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
@@ -22,6 +22,41 @@ export const WorkflowBuilder = () => {
   const onConnect = useWorkflowStore((state) => state.onConnect);
   const setSelectedNodeId = useWorkflowStore((state) => state.setSelectedNodeId);
   const setSelectedEdgeId = useWorkflowStore((state) => state.setSelectedEdgeId);
+  const addNode = useWorkflowStore((state) => state.addNode);
+
+  const { screenToFlowPosition } = useReactFlow();
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      const type = event.dataTransfer.getData('application/reactflow');
+
+      // check if the dropped element is valid
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      
+      const newNodeData = {
+        label: `${type.charAt(0).toUpperCase() + type.slice(1)} Node`,
+      };
+
+      // The store's addNode currently handles layouting, but it doesn't take position.
+      // We'll use the existing addNode which adds it to the graph.
+      addNode(type, newNodeData);
+    },
+    [screenToFlowPosition, addNode],
+  );
 
   // Register custom node types with useMemo to prevent re-renders
   const nodeTypes = useMemo(() => ({
@@ -46,24 +81,25 @@ export const WorkflowBuilder = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+        onNodeClick={(_, node) => {
+          if (node.type !== 'exit') {
+            setSelectedNodeId(node.id);
+          } else {
+            setSelectedNodeId(null);
+          }
+        }}
         onPaneClick={() => {
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
         }}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         colorMode="light"
         fitView
       >
         <Background />
-        <Panel position="bottom-left" className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm m-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Canvas Status: </span>
-            <span className="text-xs font-bold text-gray-700">Live Editing</span>
-          </div>
-        </Panel>
         <MiniMap 
           nodeStrokeWidth={2} 
           className="rounded-lg border border-gray-200 shadow-sm"
@@ -76,3 +112,9 @@ export const WorkflowBuilder = () => {
     </div>
   );
 };
+
+export const WorkflowBuilder = () => (
+  <ReactFlowProvider>
+    <WorkflowBuilderContent />
+  </ReactFlowProvider>
+);

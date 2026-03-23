@@ -28,7 +28,7 @@ const DelayNode = ({ id, data, selected }: { id: string, data: any, selected?: b
       </button>
 
       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 shrink-0">
-        <Clock className="w-4 h-4 text-amber-600" />
+        <Clock className="w-4 h-4 text-[#854F0B]" />
       </div>
       
       <div className="flex flex-col text-left overflow-hidden">
@@ -43,12 +43,12 @@ const DelayNode = ({ id, data, selected }: { id: string, data: any, selected?: b
       <Handle 
         type="target" 
         position={Position.Top} 
-        className="bg-white! w-3! h-3! border-2! border-amber-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#854F0B]! hover:scale-125! transition-transform"
       />
       <Handle 
         type="source" 
         position={Position.Bottom} 
-        className="bg-white! w-3! h-3! border-2! border-amber-500! hover:scale-125! transition-transform"
+        className="bg-white! w-3! h-3! border-2! border-[#854F0B]! hover:scale-125! transition-transform"
       />
     </div>
   );
