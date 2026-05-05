@@ -88,7 +88,7 @@ export class AuthService {
       emailVerificationExpiry,
     });
 
-    const verificationUrl = `${this.config.get<string>('APP_URL')}/api/auth/verify-email?token=${emailVerificationToken}`;
+    const verificationUrl = `${this.config.get<string>('FRONTEND_URL')}/auth/verify-email?token=${emailVerificationToken}`;
     await this.mailService.sendVerificationEmail(
       user.email,
       user.name ?? user.email,
@@ -160,6 +160,46 @@ export class AuthService {
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
     return tokens;
+  }
+
+  // ─── Me ───────────────────────────────────────────────────────────────────────
+
+  async getMe(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.stripSensitiveFields(user);
+  }
+
+  // ─── Resend verification ──────────────────────────────────────────────────────
+
+  async resendVerification(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      return { message: 'Email is already verified' };
+    }
+
+    const { token: emailVerificationToken, expiry: emailVerificationExpiry } =
+      this.generateEmailVerificationToken();
+
+    await this.usersService.updateById(user.id, {
+      emailVerificationToken,
+      emailVerificationExpiry,
+    });
+
+    const verificationUrl = `${this.config.get<string>('FRONTEND_URL')}/auth/verify-email?token=${emailVerificationToken}`;
+    await this.mailService.sendVerificationEmail(
+      user.email,
+      user.name ?? user.email,
+      verificationUrl,
+    );
+
+    return { message: 'Verification email sent. Please check your inbox.' };
   }
 
   // ─── Email verification ───────────────────────────────────────────────────────

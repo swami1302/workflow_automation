@@ -8,51 +8,47 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { setAuthErrorCallback } from '@/lib/api/axios';
 import { TokenStorage } from '@/lib/api/tokens';
 import type { AuthResponse, User } from '@/lib/types/auth';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface AppContextValue {
-  /** Authenticated user, or null when logged out. */
+interface AuthContextValue {
   user: User | null;
-  /** True once the context has finished reading localStorage. */
+  /** True once the context has finished reading localStorage (safe to render auth-dependent UI). */
   isInitialized: boolean;
   isAuthenticated: boolean;
   /** Call after a successful login or signup response. */
   login: (response: AuthResponse) => void;
   /** Clears tokens, user state and redirects to /login. */
   logout: () => void;
-  /** Update the in-memory user (e.g. after a profile edit). */
+  /** Update the in-memory user (e.g. after a profile edit or /me response). */
   updateUser: (partial: Partial<User>) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
-const AppContext = createContext<AppContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-export function AppContextProvider({ children }: { children: React.ReactNode }) {
+export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(() => {
+  const queryClient = useQueryClient();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
     const storedUser = TokenStorage.getUser();
     const accessToken = TokenStorage.getAccessToken();
-    return storedUser && accessToken ? storedUser : null;
-  });
-  const isInitialized = true;
-
-  // Register the auth-error callback so the axios interceptor can drive logout
-  // without needing access to React state directly.
-  useEffect(() => {
-    setAuthErrorCallback(() => {
-      TokenStorage.clearAll();
-      setUser(null);
-      router.push('/login');
-    });
-  }, [router]);
+    if (storedUser && accessToken) {
+      setUser(storedUser);
+    }
+    setIsInitialized(true);
+  }, []);
 
   const login = useCallback((response: AuthResponse) => {
     TokenStorage.setTokens(response.accessToken, response.refreshToken);
@@ -63,8 +59,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const logout = useCallback(() => {
     TokenStorage.clearAll();
     setUser(null);
+    queryClient.clear();
     router.push('/login');
-  }, [router]);
+  }, [router, queryClient]);
 
   const updateUser = useCallback((partial: Partial<User>) => {
     setUser((prev) => {
@@ -75,7 +72,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
-  const value = useMemo<AppContextValue>(
+  const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isInitialized,
@@ -87,15 +84,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     [user, isInitialized, login, logout, updateUser],
   );
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useAppContext(): AppContextValue {
-  const ctx = useContext(AppContext);
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAppContext must be used inside <AppContextProvider>');
+    throw new Error('useAuth must be used inside <AuthContextProvider>');
   }
   return ctx;
 }

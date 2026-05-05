@@ -6,12 +6,16 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { JwtUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { SignupDto } from './dto/signup.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -35,10 +39,23 @@ export class AuthController {
     return this.authService.refreshTokens(dto);
   }
 
-  // Token arrives as a query param so the link in the email works directly in a browser
   @Get('verify-email')
   @HttpCode(HttpStatus.OK)
   verifyEmail(@Query() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  getMe(@CurrentUser() user: JwtUser) {
+    return this.authService.getMe(user.sub);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  resendVerification(@CurrentUser() user: JwtUser) {
+    return this.authService.resendVerification(user.sub);
   }
 }

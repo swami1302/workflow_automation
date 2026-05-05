@@ -12,7 +12,7 @@ export default function Home() {
     <main className="flex flex-col h-screen w-screen bg-white font-sans antialiased overflow-hidden">
       {/* Top Header Section */}
       <Header />
-      
+
       {/* Main Builder Area */}
       <section className="flex flex-1 relative overflow-hidden">
         {/* React Flow Canvas */}

@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Search, MoreHorizontal, Play, Pause, Trash2, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
+import { useAuth } from "@/context/AuthContext";
 
 const WORKFLOWS = [
   { id: "1", name: "Sync CRM Contacts", status: "Active", steps: 5, lastRun: "2 mins ago", type: "Automation" },
@@ -30,6 +31,8 @@ const WORKFLOWS = [
 ];
 
 export default function WorkflowsPage() {
+  const { user } = useAuth();
+  console.log(user);
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <DashboardSidebar />

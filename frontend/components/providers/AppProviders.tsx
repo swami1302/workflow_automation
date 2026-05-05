@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppContextProvider } from '@/context/AppContext';
+import { AuthContextProvider } from '@/context/AuthContext';
+import { AxiosProvider } from '@/context/AxiosContext';
+import { RouteGuard } from './RouteGuard';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -20,9 +22,13 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContextProvider>
-        {children}
-      </AppContextProvider>
+      <AuthContextProvider>
+        <AxiosProvider>
+          <RouteGuard>
+            {children}
+          </RouteGuard>
+        </AxiosProvider>
+      </AuthContextProvider>
     </QueryClientProvider>
   );
 }
