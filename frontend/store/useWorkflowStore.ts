@@ -231,7 +231,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
             const targetNode = nodes.find(n => n.id === edge.target);
             if (targetNode && targetNode.type !== 'trigger') {
               visitedNodes.add(edge.target);
-              queue.push({ id: edge.target });
+              queue.push({ id: edge.target, handle: undefined });
             }
           }
         });

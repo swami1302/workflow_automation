@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+export const LoginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const SignupSchema = z.object({
+  name: z.string().max(100).optional(),
+  email: z.string().email('Please enter a valid email address'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password must not exceed 72 characters'),
+});
+
+export type LoginFormValues = z.infer<typeof LoginSchema>;
+export type SignupFormValues = z.infer<typeof SignupSchema>;
+
 export const TriggerNodeSchema = z.object({
   label: z.string().min(1, "Node label is required"),
   every: z.number().min(1, "Minimum value is 1"),
