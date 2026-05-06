@@ -50,7 +50,7 @@ export function LoginForm() {
         </CardHeader>
 
         <CardContent className="grid gap-4">
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Button type="button" variant="outline" className="bg-white">
               <Github className="mr-2 h-4 w-4" /> Github
             </Button>
@@ -66,7 +66,7 @@ export function LoginForm() {
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-slate-500">Or continue with</span>
             </div>
-          </div>
+          </div> */}
 
           <div className="grid gap-2">
             <Label htmlFor="login-email">Email</Label>
@@ -77,7 +77,7 @@ export function LoginForm() {
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="login-password">Password</Label>
-              <Link href="#" className="text-xs text-orange-600 hover:underline">Forgot password?</Link>
+              <Link href="/auth/forgot-password" className="text-xs text-orange-600 hover:underline">Forgot password?</Link>
             </div>
             <Input id="login-password" type="password" {...register('password')} />
             {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
@@ -85,7 +85,7 @@ export function LoginForm() {
         </CardContent>
 
         <CardFooter>
-          <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800" disabled={loginMutation.isPending}>
+          <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={loginMutation.isPending}>
             {loginMutation.isPending
               ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in…</>
               : 'Login'}

@@ -17,6 +17,15 @@ export interface SignupPayload {
   name?: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useAuthApi() {
@@ -46,6 +55,16 @@ export function useAuthApi() {
 
       verifyEmail: async (token: string): Promise<{ message: string }> => {
         const { data } = await axios.get<{ message: string }>(`/auth/verify-email?token=${token}`);
+        return data;
+      },
+
+      forgotPassword: async (payload: ForgotPasswordPayload): Promise<{ message: string }> => {
+        const { data } = await axios.post<{ message: string }>('/auth/forgot-password', payload);
+        return data;
+      },
+
+      resetPassword: async (payload: ResetPasswordPayload): Promise<{ message: string }> => {
+        const { data } = await axios.post<{ message: string }>('/auth/reset-password', payload);
         return data;
       },
     }),

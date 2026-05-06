@@ -2,10 +2,26 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, Shield, Globe, Cpu, ArrowRight } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Zap, Shield, Globe, Cpu, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+
+function getInitials(name?: string | null, email?: string): string {
+  if (name) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  return (email?.[0] ?? "U").toUpperCase();
+}
 
 export function LandingPage() {
+  const { user, isAuthenticated, isInitialized, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Navigation */}
@@ -16,16 +32,60 @@ export function LandingPage() {
           </div>
           <span className="text-xl font-bold text-slate-900 tracking-tight">FlowBuilder</span>
         </div>
-        <div className="flex items-center gap-6">
-          <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-orange-600 transition-colors">
-            Sign In
-          </Link>
-          <Link href="/login">
-            <Button className="bg-slate-900 hover:bg-slate-800 text-white px-6">
-              Get Started
-            </Button>
-          </Link>
-        </div>
+
+        {/* Auth-aware nav actions */}
+        {isInitialized && (
+          <div className="flex items-center gap-4">
+            {isAuthenticated && user ? (
+              <>
+                <div className="flex items-center gap-3 mr-2">
+                  <Avatar className="h-9 w-9 border-2 border-orange-100">
+                    <AvatarFallback className="bg-orange-50 text-orange-700 text-sm font-bold">
+                      {getInitials(user.name, user.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900 leading-tight">
+                      {user.name ?? user.email}
+                    </span>
+                    {user.name && (
+                      <span className="text-xs text-slate-400 leading-tight">{user.email}</span>
+                    )}
+                  </div>
+                </div>
+                <Link href="/workflows">
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white px-5 gap-2">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Open Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={logout}
+                  className="text-slate-500 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-slate-600 hover:text-orange-600 transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link href="/login">
+                  <Button className="bg-slate-900 hover:bg-slate-800 text-white px-6">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -44,15 +104,17 @@ export function LandingPage() {
             The most intuitive visual builder to connect your apps, process data, and automate repetitive tasks in minutes.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link href="/login">
+            <Link href={isAuthenticated ? "/workflows" : "/login"}>
               <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-orange-200 gap-2 group">
                 Start Building Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="h-14 px-10 text-lg font-semibold border-slate-200">
-              Watch Demo
-            </Button>
+            <Link href="/workflow/demo">
+              <Button size="lg" variant="outline" className="h-14 px-10 text-lg font-semibold border-slate-200 hover:border-orange-200 hover:text-orange-600 transition-colors">
+                Try Demo
+              </Button>
+            </Link>
           </div>
         </section>
 

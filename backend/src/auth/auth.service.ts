@@ -6,23 +6,32 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as ms from 'ms';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SignupDto } from './dto/signup.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 
 const BCRYPT_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_EXPIRY_HOURS = 24;
+const PASSWORD_RESET_EXPIRY_HOURS = 1;
 
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }
+
+export type SafeUser = Omit<
+  User,
+  'password' | 'refreshToken' | 'emailVerificationToken' | 'forgotPasswordToken'
+>;
 
 interface JwtPayload {
   sub: string;
@@ -63,14 +72,22 @@ export class AuthService {
     return { token, expiry };
   }
 
-  private stripSensitiveFields(user: Record<string, unknown>) {
-    const { password: _p, refreshToken: _rt, emailVerificationToken: _evt, ...safe } = user;
+  private stripSensitiveFields(user: User): SafeUser {
+    const {
+      password: _p,
+      refreshToken: _rt,
+      emailVerificationToken: _evt,
+      forgotPasswordToken: _fpt,
+      ...safe
+    } = user;
     return safe;
   }
 
   // ─── Signup ──────────────────────────────────────────────────────────────────
 
-  async signup(dto: SignupDto) {
+  async signup(
+    dto: SignupDto,
+  ): Promise<{ user: SafeUser; message: string } & TokenPair> {
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) {
       throw new ConflictException('An account with this email already exists');
@@ -108,7 +125,7 @@ export class AuthService {
 
   // ─── Login ───────────────────────────────────────────────────────────────────
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<{ user: SafeUser } & TokenPair> {
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) {
       // Use the same message for both cases to avoid user enumeration
@@ -132,7 +149,7 @@ export class AuthService {
 
   // ─── Refresh tokens ──────────────────────────────────────────────────────────
 
-  async refreshTokens(dto: RefreshTokenDto) {
+  async refreshTokens(dto: RefreshTokenDto): Promise<TokenPair> {
     let payload: JwtPayload;
 
     try {
@@ -164,7 +181,7 @@ export class AuthService {
 
   // ─── Me ───────────────────────────────────────────────────────────────────────
 
-  async getMe(userId: string) {
+  async getMe(userId: string): Promise<SafeUser> {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -174,7 +191,7 @@ export class AuthService {
 
   // ─── Resend verification ──────────────────────────────────────────────────────
 
-  async resendVerification(userId: string) {
+  async resendVerification(userId: string): Promise<{ message: string }> {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -202,9 +219,55 @@ export class AuthService {
     return { message: 'Verification email sent. Please check your inbox.' };
   }
 
+  // ─── Forgot password ──────────────────────────────────────────────────────────
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    const user = await this.usersService.findByEmail(dto.email);
+
+    // Always return success to avoid user enumeration
+    if (!user) {
+      return { message: 'If an account with that email exists, a reset link has been sent.' };
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + PASSWORD_RESET_EXPIRY_HOURS);
+
+    await this.usersService.updateById(user.id, {
+      forgotPasswordToken: token,
+      forgotPasswordExpiry: expiry,
+    });
+
+    const resetUrl = `${this.config.get<string>('FRONTEND_URL')}/auth/reset-password?token=${token}`;
+    await this.mailService.sendPasswordResetEmail(user.email, user.name ?? user.email, resetUrl);
+
+    return { message: 'If an account with that email exists, a reset link has been sent.' };
+  }
+
+  // ─── Reset password ───────────────────────────────────────────────────────────
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const user = await this.usersService.findByForgotPasswordToken(dto.token);
+
+    if (!user || !user.forgotPasswordExpiry || user.forgotPasswordExpiry < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
+
+    await this.usersService.updateById(user.id, {
+      password: hashedPassword,
+      forgotPasswordToken: null,
+      forgotPasswordExpiry: null,
+      refreshToken: null, // invalidate all sessions
+    });
+
+    return { message: 'Password reset successfully. Please log in with your new password.' };
+  }
+
   // ─── Email verification ───────────────────────────────────────────────────────
 
-  async verifyEmail(dto: VerifyEmailDto) {
+  async verifyEmail(dto: VerifyEmailDto): Promise<{ message: string }> {
     const user = await this.usersService.findByEmailVerificationToken(dto.token);
 
     if (!user) {

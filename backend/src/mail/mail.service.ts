@@ -62,4 +62,35 @@ export class MailService {
 
     this.logger.log(`Verification email sent to ${to}`);
   }
+
+  async sendPasswordResetEmail(to: string, name: string, resetUrl: string): Promise<void> {
+    const email: Mailgen.Content = {
+      body: {
+        name: name || to,
+        intro: 'You requested a password reset for your Workflow Builder account.',
+        action: {
+          instructions: 'Click the button below to reset your password. This link expires in 1 hour.',
+          button: {
+            color: '#4F46E5',
+            text: 'Reset Password',
+            link: resetUrl,
+          },
+        },
+        outro: 'If you did not request a password reset, you can safely ignore this email.',
+      },
+    };
+
+    const html = this.mailgen.generate(email);
+    const text = this.mailgen.generatePlaintext(email);
+
+    await this.transporter.sendMail({
+      from: this.config.get<string>('MAIL_FROM'),
+      to,
+      subject: 'Reset your password – Workflow Builder',
+      html,
+      text,
+    });
+
+    this.logger.log(`Password reset email sent to ${to}`);
+  }
 }

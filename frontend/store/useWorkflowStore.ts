@@ -17,6 +17,7 @@ type WorkflowStore = {
   edges: Edge[];
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
+  workflowName: string;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -24,6 +25,7 @@ type WorkflowStore = {
   setEdges: (edges: Edge[]) => void;
   setSelectedNodeId: (id: string | null) => void;
   setSelectedEdgeId: (id: string | null) => void;
+  setWorkflowName: (name: string) => void;
   addNode: (type: string, data: any) => void;
   updateNodeData: (nodeId: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
@@ -86,7 +88,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     );
 
     const layout = sugiyama()
-      .nodeSize([nodeWidth + 100, nodeHeight + 120]); // Spacing between nodes
+      .nodeSize([nodeWidth + 180, nodeHeight + 140]);
 
     layout(dag);
 
@@ -132,6 +134,9 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   edges: initialEdges,
   selectedNodeId: null,
   selectedEdgeId: null,
+  workflowName: 'Untitled Workflow',
+
+  setWorkflowName: (name) => set({ workflowName: name }),
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id }),

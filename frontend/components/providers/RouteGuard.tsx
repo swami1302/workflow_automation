@@ -9,6 +9,9 @@ import { ME_QUERY_KEY } from '@/lib/constants/queryKeys';
 
 // ─── Route definitions ────────────────────────────────────────────────────────
 
+// Public routes that bypass all auth checks (must be checked before PROTECTED_ROUTES)
+const PUBLIC_OVERRIDE_ROUTES = ['/workflow/demo'];
+
 // Requires authenticated + email verified
 const PROTECTED_ROUTES = ['/workflows', '/workflow'];
 
@@ -23,6 +26,7 @@ const GUEST_ONLY_ROUTES = ['/login'];
 type RouteType = 'protected' | 'verification-pending' | 'guest-only' | 'public';
 
 function resolveRouteType(pathname: string): RouteType {
+  if (PUBLIC_OVERRIDE_ROUTES.some((r) => pathname.startsWith(r))) return 'public';
   if (PROTECTED_ROUTES.some((r) => pathname.startsWith(r))) return 'protected';
   if (VERIFICATION_PENDING_ROUTES.some((r) => pathname.startsWith(r))) return 'verification-pending';
   if (GUEST_ONLY_ROUTES.some((r) => pathname.startsWith(r))) return 'guest-only';

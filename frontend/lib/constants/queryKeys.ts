@@ -4,3 +4,6 @@ export const VERIFY_EMAIL_QUERY_KEY = 'verify-email';
 export const RESEND_VERIFICATION_QUERY_KEY = 'resend-verification';
 export const ME_QUERY_KEY = 'me';
 export const LOGOUT_QUERY_KEY = 'logout';
+export const FORGOT_PASSWORD_QUERY_KEY = 'forgot-password';
+export const RESET_PASSWORD_QUERY_KEY = 'reset-password';
+export const WORKFLOWS_QUERY_KEY = 'workflows';
