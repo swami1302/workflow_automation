@@ -10,7 +10,6 @@ import {
   OnConnect 
 } from '@xyflow/react';
 import { v4 as uuidv4 } from 'uuid';
-import { graphStratify, sugiyama } from 'd3-dag';
 
 type WorkflowStore = {
   nodes: Node[];
@@ -76,38 +75,146 @@ const getInitialNodeData = (type: string, label?: string) => {
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   if (nodes.length === 0) return { nodes, edges };
 
-  try {
-    const stratify = graphStratify();
-    const dag = stratify(
-      nodes.map((node) => ({
-        id: node.id,
-        parentIds: edges
-          .filter((edge) => edge.target === node.id)
-          .map((edge) => edge.source),
-      }))
-    );
+  // 1. Build adjacency lists and track incoming edges to find roots
+  const childrenMap: Record<string, { id: string; handle?: string }[]> = {};
+  const incomingCount: Record<string, number> = {};
 
-    const layout = sugiyama()
-      .nodeSize([nodeWidth + 180, nodeHeight + 140]);
+  nodes.forEach((n) => {
+    childrenMap[n.id] = [];
+    incomingCount[n.id] = 0;
+  });
 
-    layout(dag);
+  edges.forEach((e) => {
+    if (childrenMap[e.source]) {
+      childrenMap[e.source].push({ id: e.target, handle: e.sourceHandle });
+    }
+    if (incomingCount[e.target] !== undefined) {
+      incomingCount[e.target]++;
+    }
+  });
 
-    const layoutedNodes = nodes.map((node) => {
-      const dagNode = [...dag.nodes()].find((d) => d.data.id === node.id);
+  // Find root nodes (usually just the trigger)
+  const roots = nodes.filter((n) => incomingCount[n.id] === 0);
+  if (roots.length === 0 && nodes.length > 0) {
+    roots.push(nodes[0]);
+  }
+
+  // 2. Pass 1: Recursive Bottom-Up width calculation
+  const subtreeWidth: Record<string, number> = {};
+  const nodePadding = 120; // Horizontal gap between sibling subtrees
+
+  const calculateWidth = (nodeId: string): number => {
+    if (subtreeWidth[nodeId]) return subtreeWidth[nodeId];
+
+    const children = childrenMap[nodeId];
+    const sourceNode = nodes.find((n) => n.id === nodeId);
+
+    // Leaf nodes have a fixed base width
+    if (!children || children.length === 0) {
+      subtreeWidth[nodeId] = nodeWidth + nodePadding;
+      return subtreeWidth[nodeId];
+    }
+
+    // Binary nodes MUST allocate space for both YES and NO paths to keep them symmetrical
+    if (sourceNode?.type === 'binary') {
+      const yesChild = children.find((c) => c.handle === 'yes');
+      const noChild = children.find((c) => c.handle === 'no');
+
+      // If a branch is missing, we still reserve half the "default" width to maintain the split structure
+      const leftWidth = yesChild
+        ? calculateWidth(yesChild.id)
+        : (nodeWidth + nodePadding) / 2;
+      const rightWidth = noChild
+        ? calculateWidth(noChild.id)
+        : (nodeWidth + nodePadding) / 2;
+
+      subtreeWidth[nodeId] = leftWidth + rightWidth;
+      return subtreeWidth[nodeId];
+    }
+
+    // Non-binary nodes sum up their children's widths
+    let totalChildrenWidth = 0;
+    children.forEach((child) => {
+      totalChildrenWidth += calculateWidth(child.id);
+    });
+
+    subtreeWidth[nodeId] = Math.max(totalChildrenWidth, nodeWidth + nodePadding);
+    return subtreeWidth[nodeId];
+  };
+
+  roots.forEach((root) => calculateWidth(root.id));
+
+  // 3. Pass 2: Recursive Top-Down coordinate assignment
+  const positions: Record<string, { x: number; y: number }> = {};
+  const verticalSpacing = 180;
+
+  const assignPositions = (nodeId: string, x: number, y: number) => {
+    if (positions[nodeId]) return; // Handle converging paths if they exist
+    positions[nodeId] = { x, y };
+
+    const children = childrenMap[nodeId];
+    const sourceNode = nodes.find((n) => n.id === nodeId);
+
+    if (!children || children.length === 0) return;
+
+    if (sourceNode?.type === 'binary') {
+      const yesChild = children.find((c) => c.handle === 'yes');
+      const noChild = children.find((c) => c.handle === 'no');
+
+      const leftWidth = yesChild
+        ? subtreeWidth[yesChild.id]
+        : (nodeWidth + nodePadding) / 2;
+      const rightWidth = noChild
+        ? subtreeWidth[noChild.id]
+        : (nodeWidth + nodePadding) / 2;
+
+      const totalDist = leftWidth + rightWidth;
+
+      // Perfectly center the children within their allocated partition
+      if (yesChild) {
+        const leftCenterX = x - totalDist / 2 + leftWidth / 2;
+        assignPositions(yesChild.id, leftCenterX, y + verticalSpacing);
+      }
+
+      if (noChild) {
+        const rightCenterX = x + totalDist / 2 - rightWidth / 2;
+        assignPositions(noChild.id, rightCenterX, y + verticalSpacing);
+      }
+    } else {
+      // For non-binary nodes, distribute children side-by-side
+      let currentLeft = x - subtreeWidth[nodeId] / 2;
+      children.forEach((child) => {
+        const childWidth = subtreeWidth[child.id];
+        const childCenterX = currentLeft + childWidth / 2;
+        assignPositions(child.id, childCenterX, y + verticalSpacing);
+        currentLeft += childWidth;
+      });
+    }
+  };
+
+  // Start positioning from each root, spreading them horizontally
+  let currentRootX = 250;
+  const startY = 100;
+  roots.forEach((root) => {
+    assignPositions(root.id, currentRootX, startY);
+    currentRootX += subtreeWidth[root.id] + 400; // Space between disconnected graphs
+  });
+
+  // 4. Map the calculated positions back to the React Flow nodes
+  const layoutedNodes = nodes.map((node) => {
+    if (positions[node.id]) {
       return {
         ...node,
         position: {
-          x: (dagNode?.x || 0),
-          y: (dagNode?.y || 0),
+          x: positions[node.id].x - nodeWidth / 2,
+          y: positions[node.id].y - nodeHeight / 2,
         },
       };
-    });
+    }
+    return node;
+  });
 
-    return { nodes: layoutedNodes, edges };
-  } catch (e) {
-    console.error("Layout error:", e);
-    return { nodes, edges };
-  }
+  return { nodes: layoutedNodes, edges };
 };
 
 const initialNodes: Node[] = [
@@ -158,7 +265,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     const incomingEdges = edges.filter((e) => e.target === nodeId);
     const outgoingEdges = edges.filter((e) => e.source === nodeId);
 
-    let newEdges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+    const newEdges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
 
     if (incomingEdges.length === 1 && outgoingEdges.length === 1) {
       const source = incomingEdges[0].source;
@@ -201,8 +308,24 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   },
 
   onConnect: (connection) => {
-    const newEdges = addEdge(connection, get().edges);
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(get().nodes, newEdges);
+    const { nodes, edges } = get();
+    
+    // Check if the source node is a binary node
+    const sourceNode = nodes.find(n => n.id === connection.source);
+    
+    // We want to ensure only one edge per source handle
+    // This applies to binary (yes/no) and other nodes (which typically have one output)
+    const existingEdge = edges.find(
+      (e) => e.source === connection.source && e.sourceHandle === connection.sourceHandle
+    );
+
+    let updatedEdges = edges;
+    if (existingEdge && sourceNode?.type !== 'trigger') {
+      updatedEdges = edges.filter((e) => e.id !== existingEdge.id);
+    }
+
+    const newEdges = addEdge(connection, updatedEdges);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, newEdges);
     set({
       nodes: layoutedNodes,
       edges: layoutedEdges,
@@ -267,8 +390,8 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       [...yesDownstream.edges, ...noDownstream.edges].forEach(id => edgesToRemove.add(id));
     }
 
-    let updatedNodes = nodes.filter(n => !nodesToRemove.has(n.id));
-    let updatedEdges = edges.filter(e => !edgesToRemove.has(e.id));
+    const updatedNodes = nodes.filter(n => !nodesToRemove.has(n.id));
+    const updatedEdges = edges.filter(e => !edgesToRemove.has(e.id));
 
     const incomingEdges = edges.filter((e) => e.target === nodeId);
     const parentId = incomingEdges.length > 0 ? incomingEdges[0].source : null;
@@ -341,7 +464,9 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
           const edgeAfter: Edge = {
             id: `e-${id}-${targetNode.id}`,
             source: id,
-            sourceHandle: type === 'binary' ? 'yes' : undefined,
+            sourceHandle: type === 'binary' 
+              ? (edgeToSplit.sourceHandle === 'no' ? 'no' : 'yes') 
+              : undefined,
             target: targetNode.id,
             animated: true,
             type: 'custom',
@@ -365,7 +490,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
             const binaryExitEdge: Edge = {
               id: `e-${id}-${exitId}`,
               source: id,
-              sourceHandle: 'no',
+              sourceHandle: edgeToSplit.sourceHandle === 'no' ? 'yes' : 'no',
               target: exitId,
               animated: true,
               type: 'custom',
@@ -383,6 +508,46 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         data: initialData,
       };
       updatedNodes.push(newNode);
+
+      // If it's a binary node added without splitting an edge, 
+      // we still want it to have default 'yes' and 'no' paths for a better UX.
+      if (type === 'binary') {
+        const yesExitId = `exit-${uuidv4()}`;
+        const noExitId = `exit-${uuidv4()}`;
+        
+        const yesExitNode: Node = {
+          id: yesExitId,
+          type: 'exit',
+          position: { x: 0, y: 0 },
+          data: { label: 'End' },
+        };
+        const noExitNode: Node = {
+          id: noExitId,
+          type: 'exit',
+          position: { x: 0, y: 0 },
+          data: { label: 'End' },
+        };
+
+        const yesEdge: Edge = {
+          id: `e-${id}-${yesExitId}`,
+          source: id,
+          sourceHandle: 'yes',
+          target: yesExitId,
+          animated: true,
+          type: 'custom',
+        };
+        const noEdge: Edge = {
+          id: `e-${id}-${noExitId}`,
+          source: id,
+          sourceHandle: 'no',
+          target: noExitId,
+          animated: true,
+          type: 'custom',
+        };
+
+        updatedNodes.push(yesExitNode, noExitNode);
+        updatedEdges.push(yesEdge, noEdge);
+      }
     }
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(updatedNodes, updatedEdges);

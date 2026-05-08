@@ -18,9 +18,10 @@ import { toast } from "sonner";
 
 interface HeaderProps {
   isGuest?: boolean;
+  onSave?: () => void;
 }
 
-export const Header = ({ isGuest = false }: HeaderProps) => {
+export const Header = ({ isGuest = false, onSave }: HeaderProps) => {
   const workflowName = useWorkflowStore((s) => s.workflowName);
   const setWorkflowName = useWorkflowStore((s) => s.setWorkflowName);
 
@@ -45,6 +46,7 @@ export const Header = ({ isGuest = false }: HeaderProps) => {
     const name = draftName.trim() || "Untitled Workflow";
     setWorkflowName(name);
     setSaveDialogOpen(false);
+    onSave?.();
     toast.success(`"${name}" saved as draft`);
   };
 
