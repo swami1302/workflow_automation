@@ -24,15 +24,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { LogNodeSchema } from "@/lib/validations";
+import { LogNodeData } from "@/lib/types/workflow";
 
 interface LogConfigProps {
   nodeId: string;
-  data: any;
-  updateNodeData: (nodeId: string, data: any) => void;
+  data: LogNodeData;
+  updateNodeData: (nodeId: string, data: Partial<LogNodeData>) => void;
 }
 
 export const LogConfig = ({ nodeId, data, updateNodeData }: LogConfigProps) => {
-  const form = useForm({
+  const form = useForm<LogNodeData>({
     resolver: zodResolver(LogNodeSchema),
     defaultValues: {
       label: data.label || "Log Node",
@@ -59,9 +60,9 @@ export const LogConfig = ({ nodeId, data, updateNodeData }: LogConfigProps) => {
       includeFullPayload: data.includeFullPayload ?? false,
       destination: data.destination || "Console",
     });
-  }, [nodeId, data.logLevel, data.messageTemplate, data.includeFullPayload, data.destination, form]);
+  }, [nodeId, data.label, data.logLevel, data.messageTemplate, data.includeFullPayload, data.destination, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: LogNodeData) => {
     console.log(`[LogNode] Saving Configuration for ${nodeId}:`, values);
     updateNodeData(nodeId, values);
   };

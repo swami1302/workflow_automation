@@ -24,6 +24,8 @@ import { X, Plus, GripVertical } from "lucide-react";
 import { BinaryNodeSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 
+import { BinaryNodeData } from "@/lib/types/workflow";
+
 const OPERATORS = [
   { value: "==", label: "Equal" },
   { value: "!=", label: "Not Equal" },
@@ -38,12 +40,12 @@ const OPERATORS = [
 
 interface BinaryConfigProps {
   nodeId: string;
-  data: any;
-  updateNodeData: (nodeId: string, data: any) => void;
+  data: BinaryNodeData;
+  updateNodeData: (nodeId: string, data: Partial<BinaryNodeData>) => void;
 }
 
 export const BinaryConfig = ({ nodeId, data, updateNodeData }: BinaryConfigProps) => {
-  const form = useForm({
+  const form = useForm<BinaryNodeData>({
     resolver: zodResolver(BinaryNodeSchema),
     defaultValues: {
       label: data.label || "Binary Split",
@@ -69,9 +71,9 @@ export const BinaryConfig = ({ nodeId, data, updateNodeData }: BinaryConfigProps
       label: data.label || "Binary Split",
       conditions: data.conditions || [{ leftOperand: "", operator: "==", rightOperand: "", logicConnector: "AND" }],
     });
-  }, [nodeId, data.conditions, form]);
+  }, [nodeId, data.label, data.conditions, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: BinaryNodeData) => {
     console.log(`[BinaryNode] Saving Configuration for ${nodeId}:`, values);
     updateNodeData(nodeId, values);
   };

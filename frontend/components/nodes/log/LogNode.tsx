@@ -6,8 +6,9 @@ import { Terminal, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useWorkflowStore } from '@/store/useWorkflowStore';
+import { LogNodeData } from '@/lib/types/workflow';
 
-const LogNode = ({ id, data, selected }: { id: string, data: any, selected?: boolean }) => {
+const LogNode = ({ id, data, selected }: { id: string, data: LogNodeData, selected?: boolean }) => {
   const deleteNode = useWorkflowStore((state) => state.deleteNode);
 
   return (

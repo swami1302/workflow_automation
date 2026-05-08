@@ -16,13 +16,13 @@ export function useQueryEvents<TData, TError>(
     if (query.data && onSuccess) {
       onSuccess(query.data);
     }
-  }, [query.data]);
+  }, [query.data, onSuccess]);
 
   useEffect(() => {
     if (query.error && onError) {
       onError(query.error);
     }
-  }, [query.error]);
+  }, [query.error, onError]);
 
   return query;
 }

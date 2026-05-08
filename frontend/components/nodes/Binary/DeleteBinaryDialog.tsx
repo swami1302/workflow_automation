@@ -4,8 +4,6 @@ import React from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
   DialogFooter,
@@ -53,7 +51,7 @@ export function DeleteBinaryDialog({ nodeId }: { nodeId: string }) {
               <div className="flex flex-col items-start gap-1">
                 <span className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <Trash2 className="w-4 h-4 text-emerald-600" />
-                  Delete "Yes" Path
+                  Delete &quot;Yes&quot; Path
                 </span>
                 <span className="text-xs text-gray-500 font-normal">
                   Removes Yes branch. <span className="text-emerald-700 font-medium">Promotes No branch</span> to parent.
@@ -71,7 +69,7 @@ export function DeleteBinaryDialog({ nodeId }: { nodeId: string }) {
               <div className="flex flex-col items-start gap-1">
                 <span className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <Trash2 className="w-4 h-4 text-rose-600" />
-                  Delete "No" Path
+                  Delete &quot;No&quot; Path
                 </span>
                 <span className="text-xs text-gray-500 font-normal">
                   Removes No branch. <span className="text-rose-700 font-medium">Promotes Yes branch</span> to parent.

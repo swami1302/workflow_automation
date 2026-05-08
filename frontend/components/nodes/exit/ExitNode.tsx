@@ -4,8 +4,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BaseNodeData } from '@/lib/types/workflow';
 
-const ExitNode = ({ data, selected }: { data: any, selected?: boolean }) => {
+const ExitNode = ({ data, selected }: { data: BaseNodeData, selected?: boolean }) => {
   return (
     <div 
       className={cn(

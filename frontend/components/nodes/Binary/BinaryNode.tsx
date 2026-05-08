@@ -4,9 +4,10 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { GitBranch } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BinaryNodeData } from '@/lib/types/workflow';
 import { DeleteBinaryDialog } from './DeleteBinaryDialog';
 
-export const BinaryNode = ({ id, data, selected }: { id: string, data: any, selected?: boolean }) => {
+export const BinaryNode = ({ id, data, selected }: { id: string, data: BinaryNodeData, selected?: boolean }) => {
   return (
     <div 
       className={cn(

@@ -21,15 +21,16 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { TriggerNodeSchema } from "@/lib/validations";
+import { TriggerNodeData } from "@/lib/types/workflow";
 
 interface TriggerConfigProps {
   nodeId: string;
-  data: any;
-  updateNodeData: (nodeId: string, data: any) => void;
+  data: TriggerNodeData;
+  updateNodeData: (nodeId: string, data: Partial<TriggerNodeData>) => void;
 }
 
 export const TriggerConfig = ({ nodeId, data, updateNodeData }: TriggerConfigProps) => {
-  const form = useForm({
+  const form = useForm<TriggerNodeData>({
     resolver: zodResolver(TriggerNodeSchema),
     defaultValues: {
       label: data.label || "Trigger",
@@ -52,9 +53,9 @@ export const TriggerConfig = ({ nodeId, data, updateNodeData }: TriggerConfigPro
       every: data.every || 1,
       unit: data.unit || "Minutes",
     });
-  }, [nodeId, data.every, data.unit, form]);
+  }, [nodeId, data.label, data.every, data.unit, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: TriggerNodeData) => {
     console.log(`[TriggerNode] Saving Configuration for ${nodeId}:`, values);
     updateNodeData(nodeId, values);
   };

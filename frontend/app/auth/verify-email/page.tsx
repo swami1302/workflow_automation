@@ -22,13 +22,13 @@ function VerifyEmailContent() {
   useEffect(() => {
     const token = searchParams.get('token');
 
-    if (!token) {
-      setStatus('error');
-      setMessage('No verification token found. Please use the link from your email.');
-      return;
-    }
-
     const verify = async () => {
+      if (!token) {
+        setStatus('error');
+        setMessage('No verification token found. Please use the link from your email.');
+        return;
+      }
+
       try {
         const result = await authApi.verifyEmail(token);
         updateUser({ isEmailVerified: true });
@@ -44,7 +44,7 @@ function VerifyEmailContent() {
     };
 
     void verify();
-  }, [searchParams, updateUser]);
+  }, [searchParams, updateUser, authApi]);
 
   if (status === 'loading') {
     return (

@@ -250,7 +250,7 @@ export default function WorkflowsPage() {
             ) : filtered.length === 0 ? (
               search ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
-                  <p className="text-sm font-medium text-slate-700">No results for "{search}"</p>
+                  <p className="text-sm font-medium text-slate-700">No results for &quot;{search}&quot;</p>
                   <p className="text-xs text-slate-400">Try a different search term</p>
                 </div>
               ) : (

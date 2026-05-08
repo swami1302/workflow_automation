@@ -25,8 +25,8 @@ type WorkflowStore = {
   setSelectedNodeId: (id: string | null) => void;
   setSelectedEdgeId: (id: string | null) => void;
   setWorkflowName: (name: string) => void;
-  addNode: (type: string, data: any) => void;
-  updateNodeData: (nodeId: string, data: any) => void;
+  addNode: (type: string, data?: Record<string, unknown>) => void;
+  updateNodeData: (nodeId: string, data: Record<string, unknown>) => void;
   deleteNode: (nodeId: string) => void;
   deleteBinaryNode: (nodeId: string, option: 'yes-path' | 'no-path' | 'both') => void;
   getLayoutedElements: () => void;
@@ -76,7 +76,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   if (nodes.length === 0) return { nodes, edges };
 
   // 1. Build adjacency lists and track incoming edges to find roots
-  const childrenMap: Record<string, { id: string; handle?: string }[]> = {};
+  const childrenMap: Record<string, { id: string; handle?: string | null }[]> = {};
   const incomingCount: Record<string, number> = {};
 
   nodes.forEach((n) => {
@@ -433,7 +433,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   addNode: (type, data) => {
     const { nodes, edges, selectedEdgeId } = get();
     const id = `${type}-${uuidv4()}`;
-    const initialData = getInitialNodeData(type, data?.label);
+    const initialData = getInitialNodeData(type, data?.label as string | undefined);
 
     let updatedNodes = [...nodes];
     let updatedEdges = [...edges];

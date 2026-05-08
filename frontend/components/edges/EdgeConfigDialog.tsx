@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { PlusCircle, Play, Globe, GitBranch, Terminal, Clock, Square } from 'lucide-react'
+import { PlusCircle, Globe, GitBranch, Terminal, Clock } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,16 @@ interface EdgeConfigDialogProps {
   edgeId?: string
 }
 
-const AVAILABLE_NODES = [
+interface AvailableNode {
+  type: string;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+}
+
+const AVAILABLE_NODES: AvailableNode[] = [
   { type: 'http', label: 'HTTP Request', description: 'API Call', icon: Globe, color: 'text-blue-600', bg: 'bg-blue-50' },
   { type: 'binary', label: 'Binary Split', description: 'Conditional', icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50' },
   { type: 'log', label: 'Log', description: 'Data Logger', icon: Terminal, color: 'text-slate-600', bg: 'bg-slate-50' },
@@ -36,8 +45,8 @@ export const EdgeConfigDialog = ({ edgeId }: EdgeConfigDialogProps) => {
     }
   };
 
-  const handleSelect = (type: string, node: any) => {
-    addNode(type, node);
+  const handleSelect = (type: string, node: AvailableNode) => {
+    addNode(type, { label: node.label });
     setOpen(false);
     setSelectedEdgeId(null);
   };

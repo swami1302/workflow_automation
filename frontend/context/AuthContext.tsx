@@ -44,10 +44,14 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const storedUser = TokenStorage.getUser();
     const accessToken = TokenStorage.getAccessToken();
-    if (storedUser && accessToken) {
-      setUser(storedUser);
-    }
-    setIsInitialized(true);
+    
+    // Wrap in setTimeout to avoid synchronous setState in effect
+    setTimeout(() => {
+      if (storedUser && accessToken) {
+        setUser(storedUser);
+      }
+      setIsInitialized(true);
+    }, 0);
   }, []);
 
   const login = useCallback((response: AuthResponse) => {

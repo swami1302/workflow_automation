@@ -25,15 +25,16 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Plus, X } from "lucide-react";
 import { HttpNodeSchema } from "@/lib/validations";
+import { HttpNodeData } from "@/lib/types/workflow";
 
 interface HttpConfigProps {
   nodeId: string;
-  data: any;
-  updateNodeData: (nodeId: string, data: any) => void;
+  data: HttpNodeData;
+  updateNodeData: (nodeId: string, data: Partial<HttpNodeData>) => void;
 }
 
 export const HttpConfig = ({ nodeId, data, updateNodeData }: HttpConfigProps) => {
-  const form = useForm({
+  const form = useForm<HttpNodeData>({
     resolver: zodResolver(HttpNodeSchema),
     defaultValues: {
       label: data.label || "HTTP Request",
@@ -70,7 +71,7 @@ export const HttpConfig = ({ nodeId, data, updateNodeData }: HttpConfigProps) =>
     });
   }, [nodeId, data.method, data.url, data.timeout, data.authType, data.authValue, data.headers, data.body, data.followRedirects, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: HttpNodeData) => {
     console.log(`[HttpNode] Saving Configuration for ${nodeId}:`, values);
     updateNodeData(nodeId, values);
   };
@@ -195,7 +196,7 @@ export const HttpConfig = ({ nodeId, data, updateNodeData }: HttpConfigProps) =>
 
           <div className="space-y-2">
             <FormLabel>Headers</FormLabel>
-            {headers.map((header: any, index: number) => (
+            {headers.map((header: { key: string; value: string }, index: number) => (
               <div key={index} className="flex gap-2">
                 <Input 
                   placeholder="Key" 
@@ -220,7 +221,7 @@ export const HttpConfig = ({ nodeId, data, updateNodeData }: HttpConfigProps) =>
                   variant="ghost" 
                   size="icon"
                   onClick={() => {
-                    const newHeaders = headers.filter((_: any, i: number) => i !== index);
+                    const newHeaders = headers.filter((_: unknown, i: number) => i !== index);
                     form.setValue("headers", newHeaders);
                   }}
                 >

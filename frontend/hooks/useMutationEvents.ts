@@ -16,13 +16,13 @@ export function useMutationEvents<TData, TError, TVariables>(
     if (mutation.isSuccess && mutation.data && onSuccess) {
       onSuccess(mutation.data);
     }
-  }, [mutation.isSuccess, mutation.data]);
+  }, [mutation.isSuccess, mutation.data, onSuccess]);
 
   useEffect(() => {
     if (mutation.isError && mutation.error && onError) {
       onError(mutation.error);
     }
-  }, [mutation.isError, mutation.error]);
+  }, [mutation.isError, mutation.error, onError]);
 
   return mutation;
 }

@@ -6,8 +6,9 @@ import { Globe, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useWorkflowStore } from '@/store/useWorkflowStore';
+import { HttpNodeData } from '@/lib/types/workflow';
 
-const HttpNode = ({ id, data, selected }: { id: string, data: any, selected?: boolean }) => {
+const HttpNode = ({ id, data, selected }: { id: string, data: HttpNodeData, selected?: boolean }) => {
   const deleteNode = useWorkflowStore((state) => state.deleteNode);
 
   return (

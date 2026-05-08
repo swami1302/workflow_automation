@@ -6,8 +6,9 @@ import { Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useWorkflowStore } from '@/store/useWorkflowStore';
+import type { DelayNodeData } from '@/lib/types/workflow';
 
-const DelayNode = ({ id, data, selected }: { id: string, data: any, selected?: boolean }) => {
+const DelayNode = ({ id, data, selected }: { id: string, data: DelayNodeData, selected?: boolean }) => {
   const deleteNode = useWorkflowStore((state) => state.deleteNode);
 
   return (

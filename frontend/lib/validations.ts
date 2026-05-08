@@ -62,7 +62,7 @@ export const BinaryNodeSchema = z.object({
   label: z.string().min(1, "Node label is required"),
   conditions: z.array(z.object({
     leftOperand: z.string().min(1, "Left operand is required"),
-    operator: z.enum(["==", "!=", ">", "<", ">=", "<=", "contains", "is empty", "is not empty"]),
+    operator: z.enum(["==", "!=", ">", "<", ">=", "<=", "contains", "not contains", "is empty", "is not empty"]),
     rightOperand: z.string().optional(),
     logicConnector: z.enum(["AND", "OR"]).optional(),
   })).min(1, "At least one condition is required"),
@@ -79,7 +79,7 @@ export const LogNodeSchema = z.object({
 export const DelayNodeSchema = z.object({
   label: z.string().min(1, "Node label is required"),
   duration: z.number().min(1, "Minimum value is 1"),
-  unit: z.enum(["Minutes", "Hours", "Days", "Months"]),
+  unit: z.enum(["Seconds", "Minutes", "Hours", "Days", "Months"]),
 });
 
 export type TriggerNodeData = z.infer<typeof TriggerNodeSchema>;

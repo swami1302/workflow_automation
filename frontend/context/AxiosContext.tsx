@@ -39,7 +39,7 @@ export function AxiosProvider({ children }: { children: React.ReactNode }) {
     logoutRef.current = logout;
   }, [logout]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const axiosInstance = useMemo<AxiosInstance>(() => {
     const instance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL,

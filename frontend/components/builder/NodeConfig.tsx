@@ -8,6 +8,13 @@ import { BinaryConfig } from "@/components/nodes/Binary/BinaryConfig";
 import { LogConfig } from "@/components/nodes/log/LogConfig";
 import { DelayConfig } from "@/components/nodes/delay/DelayConfig";
 import { Button } from "@/components/ui/button";
+import type { 
+  TriggerNodeData, 
+  HttpNodeData, 
+  BinaryNodeData, 
+  LogNodeData, 
+  DelayNodeData 
+} from "@/lib/types/workflow";
 
 interface NodeConfigProps {
   nodeId: string;
@@ -19,24 +26,48 @@ export const NodeConfig: React.FC<NodeConfigProps> = ({ nodeId }) => {
 
   if (!node || node.type === 'exit') return null;
 
-  const configProps = {
-    nodeId,
-    data: node.data,
-    updateNodeData,
-  };
-
   const renderConfig = () => {
     switch (node.type) {
       case "trigger":
-        return <TriggerConfig {...configProps} />;
+        return (
+          <TriggerConfig 
+            nodeId={nodeId} 
+            data={node.data as unknown as TriggerNodeData} 
+            updateNodeData={updateNodeData} 
+          />
+        );
       case "http":
-        return <HttpConfig {...configProps} />;
+        return (
+          <HttpConfig 
+            nodeId={nodeId} 
+            data={node.data as unknown as HttpNodeData} 
+            updateNodeData={updateNodeData} 
+          />
+        );
       case "binary":
-        return <BinaryConfig {...configProps} />;
+        return (
+          <BinaryConfig 
+            nodeId={nodeId} 
+            data={node.data as unknown as BinaryNodeData} 
+            updateNodeData={updateNodeData} 
+          />
+        );
       case "log":
-        return <LogConfig {...configProps} />;
+        return (
+          <LogConfig 
+            nodeId={nodeId} 
+            data={node.data as unknown as LogNodeData} 
+            updateNodeData={updateNodeData} 
+          />
+        );
       case "delay":
-        return <DelayConfig {...configProps} />;
+        return (
+          <DelayConfig 
+            nodeId={nodeId} 
+            data={node.data as unknown as DelayNodeData} 
+            updateNodeData={updateNodeData} 
+          />
+        );
       default:
         return <div className="p-4">Unknown node type: {node.type}</div>;
     }

@@ -4,8 +4,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TriggerNodeData } from '@/lib/types/workflow';
 
-const TriggerNode = ({ data, selected }: { data: any, selected?: boolean }) => {
+const TriggerNode = ({ data, selected }: { data: TriggerNodeData, selected?: boolean }) => {
   return (
     <div 
       className={cn(

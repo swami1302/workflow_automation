@@ -21,15 +21,16 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { DelayNodeSchema } from "@/lib/validations";
+import type { DelayNodeData } from "@/lib/types/workflow";
 
 interface DelayConfigProps {
   nodeId: string;
-  data: any;
-  updateNodeData: (nodeId: string, data: any) => void;
+  data: DelayNodeData;
+  updateNodeData: (nodeId: string, data: Partial<DelayNodeData>) => void;
 }
 
 export const DelayConfig = ({ nodeId, data, updateNodeData }: DelayConfigProps) => {
-  const form = useForm({
+  const form = useForm<DelayNodeData>({
     resolver: zodResolver(DelayNodeSchema),
     defaultValues: {
       label: data.label || "Delay Node",
@@ -52,9 +53,9 @@ export const DelayConfig = ({ nodeId, data, updateNodeData }: DelayConfigProps) 
       duration: data.duration || 1,
       unit: data.unit || "Minutes",
     });
-  }, [nodeId, data.duration, data.unit, form]);
+  }, [nodeId, data.label, data.duration, data.unit, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: DelayNodeData) => {
     console.log(`[DelayNode] Saving Configuration for ${nodeId}:`, values);
     updateNodeData(nodeId, values);
   };
