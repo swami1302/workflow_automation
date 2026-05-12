@@ -1,13 +1,9 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { PickType } from '@nestjs/mapped-types';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { SignupDto } from './signup.dto';
 
-export class ResetPasswordDto {
+export class ResetPasswordDto extends PickType(SignupDto, ['password'] as const) {
   @IsString()
   @IsNotEmpty({ message: 'Reset token is required' })
   token: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Password is required' })
-  @MinLength(8, { message: 'Password must be at least 8 characters' })
-  @MaxLength(72, { message: 'Password must not exceed 72 characters' })
-  password: string;
 }

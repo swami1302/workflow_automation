@@ -41,41 +41,52 @@ export function SignupForm() {
   });
 
   return (
-    <form onSubmit={handleSubmit((values) => signupMutation.mutate(values))}>
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl">Create an account</CardTitle>
-          <CardDescription>Enter your details to create your workspace</CardDescription>
-        </CardHeader>
+    <form onSubmit={handleSubmit((values) => signupMutation.mutate(values))} className="space-y-6">
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="signup-name" className="font-bold text-slate-700 ml-1">Full Name</Label>
+          <Input 
+            id="signup-name" 
+            placeholder="John Doe" 
+            className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#FF4500] font-medium"
+            {...register('name')} 
+          />
+          {errors.name && <p className="text-xs text-red-500 font-bold ml-1">{errors.name.message}</p>}
+        </div>
 
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="signup-name">Full Name</Label>
-            <Input id="signup-name" placeholder="John Doe" {...register('name')} />
-            {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-          </div>
+        <div className="grid gap-2">
+          <Label htmlFor="signup-email" className="font-bold text-slate-700 ml-1">Email</Label>
+          <Input 
+            id="signup-email" 
+            type="email" 
+            placeholder="name@company.com" 
+            className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#FF4500] font-medium"
+            {...register('email')} 
+          />
+          {errors.email && <p className="text-xs text-red-500 font-bold ml-1">{errors.email.message}</p>}
+        </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="signup-email">Email</Label>
-            <Input id="signup-email" type="email" placeholder="m@example.com" {...register('email')} />
-            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-          </div>
+        <div className="grid gap-2">
+          <Label htmlFor="signup-password" title="Password" className="font-bold text-slate-700 ml-1">Password</Label>
+          <Input 
+            id="signup-password" 
+            type="password" 
+            className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#FF4500]"
+            {...register('password')} 
+          />
+          {errors.password && <p className="text-xs text-red-500 font-bold ml-1">{errors.password.message}</p>}
+        </div>
+      </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="signup-password">Password</Label>
-            <Input id="signup-password" type="password" {...register('password')} />
-            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
-          </div>
-        </CardContent>
-
-        <CardFooter>
-          <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={signupMutation.isPending}>
-            {signupMutation.isPending
-              ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account…</>
-              : 'Create Account'}
-          </Button>
-        </CardFooter>
-      </Card>
+      <Button 
+        type="submit" 
+        className="w-full bg-[#FF4500] hover:bg-[#E63E00] text-white h-12 rounded-xl font-black shadow-lg shadow-orange-100 transition-all hover:scale-[1.02] active:scale-[0.98]" 
+        disabled={signupMutation.isPending}
+      >
+        {signupMutation.isPending
+          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account…</>
+          : 'Create Account'}
+      </Button>
     </form>
   );
 }

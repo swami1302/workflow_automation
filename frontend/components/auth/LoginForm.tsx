@@ -42,56 +42,44 @@ export function LoginForm() {
   });
 
   return (
-    <form onSubmit={handleSubmit((values) => loginMutation.mutate(values))}>
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Enter your email to sign in to your account</CardDescription>
-        </CardHeader>
+    <form onSubmit={handleSubmit((values) => loginMutation.mutate(values))} className="space-y-6">
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="login-email" className="font-bold text-slate-700 ml-1">Email</Label>
+          <Input 
+            id="login-email" 
+            type="email" 
+            placeholder="name@company.com" 
+            className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#FF4500] font-medium"
+            {...register('email')} 
+          />
+          {errors.email && <p className="text-xs text-red-500 font-bold ml-1">{errors.email.message}</p>}
+        </div>
 
-        <CardContent className="grid gap-4">
-          {/* <div className="grid grid-cols-2 gap-4">
-            <Button type="button" variant="outline" className="bg-white">
-              <Github className="mr-2 h-4 w-4" /> Github
-            </Button>
-            <Button type="button" variant="outline" className="bg-white">
-              <Chrome className="mr-2 h-4 w-4" /> Google
-            </Button>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between ml-1">
+            <Label htmlFor="login-password" title="Password" className="font-bold text-slate-700">Password</Label>
+            <Link href="/auth/forgot-password" title="Forgot password" className="text-xs font-bold text-[#FF4500] hover:underline">Forgot password?</Link>
           </div>
+          <Input 
+            id="login-password" 
+            type="password" 
+            className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#FF4500]"
+            {...register('password')} 
+          />
+          {errors.password && <p className="text-xs text-red-500 font-bold ml-1">{errors.password.message}</p>}
+        </div>
+      </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or continue with</span>
-            </div>
-          </div> */}
-
-          <div className="grid gap-2">
-            <Label htmlFor="login-email">Email</Label>
-            <Input id="login-email" type="email" placeholder="m@example.com" {...register('email')} />
-            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-          </div>
-
-          <div className="grid gap-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="login-password">Password</Label>
-              <Link href="/auth/forgot-password" className="text-xs text-orange-600 hover:underline">Forgot password?</Link>
-            </div>
-            <Input id="login-password" type="password" {...register('password')} />
-            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
-          </div>
-        </CardContent>
-
-        <CardFooter>
-          <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={loginMutation.isPending}>
-            {loginMutation.isPending
-              ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in…</>
-              : 'Login'}
-          </Button>
-        </CardFooter>
-      </Card>
+      <Button 
+        type="submit" 
+        className="w-full bg-[#FF4500] hover:bg-[#E63E00] text-white h-12 rounded-xl font-black shadow-lg shadow-orange-100 transition-all hover:scale-[1.02] active:scale-[0.98]" 
+        disabled={loginMutation.isPending}
+      >
+        {loginMutation.isPending
+          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in…</>
+          : 'Sign In'}
+      </Button>
     </form>
   );
 }

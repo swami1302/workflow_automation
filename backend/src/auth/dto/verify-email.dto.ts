@@ -1,7 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { PickType } from '@nestjs/mapped-types';
+import { ResetPasswordDto } from './reset-password.dto';
 
-export class VerifyEmailDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Verification token is required' })
-  token: string;
-}
+export class VerifyEmailDto extends PickType(ResetPasswordDto, ['token'] as const) {}
