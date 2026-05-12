@@ -5,6 +5,7 @@ import { AppProviders } from "@/components/providers/AppProviders";
 import { Toaster } from "@/components/ui/sonner"
 import { MouseTrail } from "@/components/ui/MouseTrail";
 import { GridBackground } from "@/components/ui/GridBackground";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-100 selection:text-orange-900`}
       >
         <AppProviders>
+          <Analytics />
           <GridBackground />
           <MouseTrail />
           {children}
