@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { MouseTrail } from "@/components/ui/MouseTrail";
 import { GridBackground } from "@/components/ui/GridBackground";
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
       >
         <AppProviders>
           <Analytics />
+          <SpeedInsights />
           <GridBackground />
           <MouseTrail />
           {children}
