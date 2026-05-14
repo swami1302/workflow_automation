@@ -29,9 +29,9 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans">
       {/* Announcement Banner */}
-      <div className="bg-[#FF4500] text-white py-2.5 px-4 text-center text-sm font-medium relative z-50">
+      {/* <div className="bg-[#FF4500] text-white py-2.5 px-4 text-center text-sm font-medium relative z-50">
         🎉 Limited Time: Get 50% off your first month with code <span className="font-bold border-b border-white/50">FLOW50</span>. Cancel anytime.
-      </div>
+      </div> */}
 
       <SiteHeader />
 
@@ -46,16 +46,16 @@ export function LandingPage() {
             <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
               The most intuitive visual builder to connect your apps, process data, and automate repetitive tasks in minutes.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href={isAuthenticated ? "/workflows" : "/login"}>
-                <Button size="lg" className="bg-[#FF4500] hover:bg-[#E63E00] text-white h-16 px-10 text-xl font-black rounded-full shadow-2xl shadow-orange-200 transition-all hover:scale-[1.02] active:scale-[0.98] gap-2">
-                  Start for free
-                  <ArrowRight className="w-6 h-6" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+              <Link href="/workflow/demo">
+                <Button size="lg" className="bg-[#FF4500] hover:bg-[#E63E00] text-white h-16 px-12 text-xl font-black rounded-full shadow-2xl shadow-orange-200 transition-all hover:scale-[1.05] active:scale-[0.95] gap-2 group">
+                  Try Demo
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link href="/workflow/demo">
-                <Button size="lg" variant="outline" className="h-16 px-10 text-xl font-black rounded-full border-2 border-slate-200 hover:border-[#FF4500] hover:text-[#FF4500] transition-all bg-white/50 backdrop-blur-sm">
-                  Try Demo
+              <Link href={isAuthenticated ? "/workflows" : "/login"}>
+                <Button size="lg" variant="outline" className="h-16 px-12 text-xl font-black rounded-full border-2 border-slate-200 hover:border-slate-300 transition-all bg-white/50 backdrop-blur-sm">
+                  Start for free
                 </Button>
               </Link>
             </div>

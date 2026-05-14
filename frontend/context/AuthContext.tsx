@@ -64,8 +64,8 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     TokenStorage.clearAll();
     setUser(null);
     queryClient.clear();
-    router.push('/login');
-  }, [router, queryClient]);
+    // Removed automatic router.push('/login')
+  }, [queryClient]);
 
   const updateUser = useCallback((partial: Partial<User>) => {
     setUser((prev) => {

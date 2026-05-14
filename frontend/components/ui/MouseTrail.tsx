@@ -1,11 +1,19 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 export const MouseTrail = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pathname = usePathname();
+  
+  // Only enable trail on marketing/public pages
+  const allowedPaths = ['/', '/features', '/about'];
+  const isEnabled = allowedPaths.includes(pathname);
 
   useEffect(() => {
+    if (!isEnabled) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -71,7 +79,9 @@ export const MouseTrail = () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [isEnabled, pathname]);
+
+  if (!isEnabled) return null;
 
   return (
     <canvas
