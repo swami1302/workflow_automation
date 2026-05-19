@@ -12,13 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useAuthApi, type ForgotPasswordPayload } from '@/lib/api/auth';
+import { useAuthHttp, type ForgotPasswordPayload } from '@/app/auth/action/http';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { ForgotPasswordSchema, type ForgotPasswordFormValues } from '@/lib/validations';
 import { FORGOT_PASSWORD_QUERY_KEY } from '@/lib/constants/queryKeys';
 
 export default function ForgotPasswordPage() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
 
   const mutation = useMutation<{ message: string }, Error, ForgotPasswordPayload>({
     mutationKey: [FORGOT_PASSWORD_QUERY_KEY],
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                 </Button>
               )}
               <Link
-                href="/login"
+                href="/auth/login"
                 className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
               >
                 <ArrowLeft className="h-3 w-3" /> Back to login

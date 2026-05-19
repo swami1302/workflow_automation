@@ -17,6 +17,8 @@ type WorkflowStore = {
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
   workflowName: string;
+  workflowId: string | null;
+  isWorkflowLoading: boolean;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -25,6 +27,8 @@ type WorkflowStore = {
   setSelectedNodeId: (id: string | null) => void;
   setSelectedEdgeId: (id: string | null) => void;
   setWorkflowName: (name: string) => void;
+  setWorkflowId: (id: string) => void;
+  setWorkflowLoading: (isLoading: boolean) => void;
   addNode: (type: string, data?: Record<string, unknown>) => void;
   updateNodeData: (nodeId: string, data: Record<string, unknown>) => void;
   deleteNode: (nodeId: string) => void;
@@ -242,8 +246,12 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   selectedNodeId: null,
   selectedEdgeId: null,
   workflowName: 'Untitled Workflow',
+  workflowId: null,
+  isWorkflowLoading: false,
 
   setWorkflowName: (name) => set({ workflowName: name }),
+  setWorkflowId: (id) => set({ workflowId: id }),
+  setWorkflowLoading: (isLoading) => set({ isWorkflowLoading: isLoading }),
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id }),

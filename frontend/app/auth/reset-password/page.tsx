@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useAuthApi, type ResetPasswordPayload } from '@/lib/api/auth';
+import { useAuthHttp, type ResetPasswordPayload } from '@/app/auth/action/http';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { ResetPasswordSchema, type ResetPasswordFormValues } from '@/lib/validations';
 import { RESET_PASSWORD_QUERY_KEY } from '@/lib/constants/queryKeys';
@@ -22,7 +22,7 @@ import { RESET_PASSWORD_QUERY_KEY } from '@/lib/constants/queryKeys';
 // ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
 
 function ResetPasswordContent() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -39,7 +39,7 @@ function ResetPasswordContent() {
   useMutationEvents(mutation, {
     onSuccess(data) {
       toast.success(data.message);
-      // setTimeout(() => router.push('/login'), 2000);
+      // setTimeout(() => router.push('/auth/login'), 2000);
     },
     onError(error) {
       toast.error(error.message ?? 'Reset failed. The link may have expired.');
@@ -80,7 +80,7 @@ function ResetPasswordContent() {
           </CardDescription>
         </CardHeader>
         <CardFooter>
-          <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => router.push('/login')}>
+          <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => router.push('/auth/login')}>
             Go to Login
           </Button>
         </CardFooter>
@@ -121,7 +121,7 @@ function ResetPasswordContent() {
               : 'Reset password'}
           </Button>
           <Link
-            href="/login"
+            href="/auth/login"
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
           >
             <ArrowLeft className="h-3 w-3" /> Back to login

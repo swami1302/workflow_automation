@@ -10,40 +10,34 @@ import type {
   UpdateWorkflowPayload,
   UpdateWorkflowResponse,
   DeleteWorkflowResponse,
-  WorkflowStatus,
 } from '@/lib/types/workflow';
 
-export function useWorkflowsApi() {
+export function useWorkflowHttp() {
   const axios = useAxios();
 
   return useMemo(
     () => ({
-      list: async (): Promise<WorkflowListItem[]> => {
+      getWorkflows: async (): Promise<WorkflowListItem[]> => {
         const { data } = await axios.get<WorkflowListItem[]>('/workflows');
         return data;
       },
 
-      get: async (id: string): Promise<Workflow> => {
+      getWorkflow: async (id: string): Promise<Workflow> => {
         const { data } = await axios.get<Workflow>(`/workflows/${id}`);
         return data;
       },
 
-      create: async (payload: CreateWorkflowPayload): Promise<CreateWorkflowResponse> => {
+      createWorkflow: async (payload: CreateWorkflowPayload): Promise<CreateWorkflowResponse> => {
         const { data } = await axios.post<CreateWorkflowResponse>('/workflows', payload);
         return data;
       },
 
-      update: async (id: string, payload: UpdateWorkflowPayload): Promise<UpdateWorkflowResponse> => {
+      updateWorkflow: async (id: string, payload: UpdateWorkflowPayload): Promise<UpdateWorkflowResponse> => {
         const { data } = await axios.put<UpdateWorkflowResponse>(`/workflows/${id}`, payload);
         return data;
       },
 
-      updateStatus: async (id: string, status: WorkflowStatus): Promise<UpdateWorkflowResponse> => {
-        const { data } = await axios.put<UpdateWorkflowResponse>(`/workflows/${id}`, { status });
-        return data;
-      },
-
-      remove: async (id: string): Promise<DeleteWorkflowResponse> => {
+      deleteWorkflow: async (id: string): Promise<DeleteWorkflowResponse> => {
         const { data } = await axios.delete<DeleteWorkflowResponse>(`/workflows/${id}`);
         return data;
       },

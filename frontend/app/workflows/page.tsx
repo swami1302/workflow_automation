@@ -35,12 +35,12 @@ import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkflowsApi } from "@/lib/api/workflows";
 import { WORKFLOWS_QUERY_KEY } from "@/lib/constants/queryKeys";
-import type { Workflow } from "@/lib/types/workflow";
+import type { WorkflowListItem } from "@/lib/types/workflow";
 import { toast } from "sonner";
 
 function WorkflowsEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+    <div className="flex flex-col items-center justify-center py-24 gap-5 text-center px-4">
       <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center">
         <Zap className="w-8 h-8 text-orange-500" />
       </div>
@@ -62,7 +62,7 @@ function WorkflowsEmptyState() {
 
 function WorkflowsErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center px-4">
       <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
         <AlertCircle className="w-6 h-6 text-red-500" />
       </div>
@@ -93,17 +93,17 @@ function WorkflowRow({
   onToggleStatus,
   onDelete,
 }: {
-  workflow: Workflow;
-  onToggleStatus: (id: string, current: Workflow["status"]) => void;
+  workflow: WorkflowListItem;
+  onToggleStatus: (id: string, current: WorkflowListItem["status"]) => void;
   onDelete: (id: string) => void;
 }) {
-  const isActive = workflow.status === "active";
+  const isActive = workflow.status === "ACTIVE";
 
   return (
     <TableRow className="hover:bg-slate-50/50 transition-colors">
       <TableCell className="font-medium text-slate-900 py-4 text-sm">
         <div className="flex flex-col gap-0.5">
-          <span>{workflow.name}</span>
+          <span className="truncate max-w-[150px] sm:max-w-none">{workflow.title}</span>
           <span className="text-[10px] text-slate-400 font-normal font-mono">
             {workflow.id.slice(0, 8)}
           </span>
@@ -121,16 +121,15 @@ function WorkflowRow({
           <div
             className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isActive ? "bg-emerald-500" : "bg-slate-400"}`}
           />
-          {isActive ? "Active" : "Inactive"}
+          {isActive ? "Active" : "Draft"}
         </Badge>
       </TableCell>
-      <TableCell className="text-slate-600 text-sm">{workflow.nodeCount} nodes</TableCell>
-      <TableCell className="text-slate-600 italic text-xs">
-        {workflow.lastRunAt ? timeAgo(workflow.lastRunAt) : "Never"}
+      <TableCell className="text-slate-600 italic text-xs whitespace-nowrap">
+        {timeAgo(workflow.updatedAt)}
       </TableCell>
       <TableCell>
         <Badge variant="outline" className="bg-white font-medium text-slate-500 text-[10px]">
-          {workflow.type}
+          v{workflow.version}
         </Badge>
       </TableCell>
       <TableCell className="text-right">
@@ -186,8 +185,8 @@ export default function WorkflowsPage() {
   });
 
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Workflow["status"] }) =>
-      api.updateStatus(id, status === "active" ? "inactive" : "active"),
+    mutationFn: ({ id, status }: { id: string; status: WorkflowListItem["status"] }) =>
+      api.updateStatus(id, status === "ACTIVE" ? "DRAFT" : "ACTIVE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_QUERY_KEY] });
     },
@@ -204,31 +203,31 @@ export default function WorkflowsPage() {
   });
 
   const filtered = (workflows ?? []).filter((w) =>
-    w.name.toLowerCase().includes(search.toLowerCase())
+    w.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 overflow-hidden relative">
       <DashboardSidebar />
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+        <header className="min-h-16 bg-white border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-8 py-4 sm:py-0 shrink-0 gap-4 sm:gap-0">
           <h1 className="text-lg font-semibold text-slate-900">My Workflows</h1>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Search workflows..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 w-64 bg-slate-50 border-slate-200 h-9 text-sm focus-visible:ring-orange-500"
+                className="pl-9 w-full sm:w-64 bg-slate-50 border-slate-200 h-9 text-sm focus-visible:ring-orange-500"
               />
             </div>
-            <Link href="/workflow/builder">
+            <Link href="/workflow/builder" className="w-full sm:w-auto">
               <Button
                 size="sm"
-                className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold shadow-sm text-xs h-9"
+                className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold shadow-sm text-xs h-9 w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 CREATE WORKFLOW
@@ -238,7 +237,7 @@ export default function WorkflowsPage() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 sm:p-8">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-24 gap-3 text-slate-400">
@@ -257,42 +256,41 @@ export default function WorkflowsPage() {
                 <WorkflowsEmptyState />
               )
             ) : (
-              <Table>
-                <TableHeader className="bg-slate-50/50">
-                  <TableRow>
-                    <TableHead className="w-[300px] text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Workflow Name
-                    </TableHead>
-                    <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Nodes
-                    </TableHead>
-                    <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Last Run
-                    </TableHead>
-                    <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Type
-                    </TableHead>
-                    <TableHead className="text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((workflow) => (
-                    <WorkflowRow
-                      key={workflow.id}
-                      workflow={workflow}
-                      onToggleStatus={(id, status) =>
-                        toggleStatusMutation.mutate({ id, status })
-                      }
-                      onDelete={(id) => deleteMutation.mutate(id)}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-slate-50/50">
+                    <TableRow>
+                      <TableHead className="min-w-[180px] text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Workflow Name
+                      </TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Last Run
+                      </TableHead>
+                      <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Version
+                      </TableHead>
+                      <TableHead className="text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((workflow) => (
+                      <WorkflowRow
+                        key={workflow.id}
+                        workflow={workflow}
+                        onToggleStatus={(id, status) =>
+                          toggleStatusMutation.mutate({ id, status })
+                        }
+                        onDelete={(id) => deleteMutation.mutate(id)}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
-import { useAuthApi } from '@/lib/api/auth';
+import { useAuthHttp } from '@/app/auth/action/http';
 import { ME_QUERY_KEY } from '@/lib/constants/queryKeys';
 
 // ─── Route definitions ────────────────────────────────────────────────────────
@@ -16,10 +16,10 @@ const PUBLIC_OVERRIDE_ROUTES = ['/workflow/demo'];
 const PROTECTED_ROUTES = ['/workflows', '/workflow'];
 
 // Requires authenticated + email NOT yet verified (the "check your inbox" page)
-const VERIFICATION_PENDING_ROUTES = ['/verify-email'];
+const VERIFICATION_PENDING_ROUTES = ['/auth/verify-email-pending'];
 
 // Requires NOT authenticated (login/signup)
-const GUEST_ONLY_ROUTES = ['/login'];
+const GUEST_ONLY_ROUTES = ['/auth/login'];
 
 // ─── Route type resolution ────────────────────────────────────────────────────
 
@@ -39,10 +39,12 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { isInitialized, isAuthenticated, user, updateUser } = useAuth();
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
 
-  // Fires on every mount (hard refresh) and after staleTime on window focus.
-  // Keeps user state in sync with the server without a separate hook file.
+  // Derived as a primitive so routing effect doesn't re-fire on unrelated user updates
+  const isVerified = !!user?.isEmailVerified;
+
+  // Keeps user state in sync with the server on mount and window focus.
   const { data: meData } = useQuery({
     queryKey: [ME_QUERY_KEY],
     queryFn: authApi.me,
@@ -60,29 +62,28 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
     if (!isInitialized) return;
 
     const routeType = resolveRouteType(pathname);
-    const isVerified = user?.isEmailVerified ?? false;
 
     switch (routeType) {
       case 'protected':
-        if (!isAuthenticated) { router.replace('/login'); return; }
-        if (!isVerified) { router.replace('/verify-email'); return; }
+        if (!isAuthenticated) { router.replace('/auth/login'); return; }
+        if (!isVerified) { router.replace('/auth/verify-email-pending'); return; }
         break;
 
       case 'verification-pending':
-        if (!isAuthenticated) { router.replace('/login'); return; }
+        if (!isAuthenticated) { router.replace('/auth/login'); return; }
         if (isVerified) { router.replace('/workflows'); return; }
         break;
 
       case 'guest-only':
         if (isAuthenticated) {
-          router.replace(isVerified ? '/workflows' : '/verify-email');
+          router.replace(isVerified ? '/workflows' : '/auth/verify-email-pending');
         }
         break;
 
       case 'public':
         break;
     }
-  }, [isInitialized, isAuthenticated, user, pathname, router]);
+  }, [isInitialized, isAuthenticated, isVerified, pathname, router]);
 
   return <>{children}</>;
 }

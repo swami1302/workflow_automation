@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useAuthApi, type LoginPayload } from '@/lib/api/auth';
+import { useAuthHttp, type LoginPayload } from '@/app/auth/action/http';
 import { usePostAuth } from '@/hooks/auth/usePostAuth';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { LoginSchema, type LoginFormValues } from '@/lib/validations';
@@ -20,7 +20,7 @@ import type { AuthResponse } from '@/lib/types/auth';
 import { LOGIN_QUERY_KEY } from '@/lib/constants/queryKeys';
 
 export function LoginForm() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
   const handlePostAuth = usePostAuth();
   const loginMutation = useMutation<AuthResponse, Error, LoginPayload>({
     mutationKey: [LOGIN_QUERY_KEY],

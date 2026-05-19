@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthApi } from '@/lib/api/auth';
+import { useAuthHttp } from '@/app/auth/action/http';
 import { useAuth } from '@/context/AuthContext';
 
 // ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
 
 function VerifyEmailContent() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { updateUser } = useAuth();
@@ -99,7 +99,7 @@ function VerifyEmailContent() {
       <CardFooter className="flex flex-col gap-3">
         <Button
           className="w-full bg-slate-900 hover:bg-slate-800"
-          onClick={() => router.push('/login')}
+          onClick={() => router.push('/auth/login')}
         >
           Back to Login
         </Button>

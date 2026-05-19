@@ -4,8 +4,6 @@ import { useMemo } from 'react';
 import { useAxios } from '@/context/AxiosContext';
 import type { AuthResponse, User } from '@/lib/types/auth';
 
-// ─── Payload types ────────────────────────────────────────────────────────────
-
 export interface LoginPayload {
   email: string;
   password: string;
@@ -26,9 +24,7 @@ export interface ResetPasswordPayload {
   password: string;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
-export function useAuthApi() {
+export function useAuthHttp() {
   const axios = useAxios();
 
   return useMemo(

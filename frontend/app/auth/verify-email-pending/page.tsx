@@ -5,12 +5,12 @@ import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthApi } from '@/lib/api/auth';
+import { useAuthHttp } from '@/app/auth/action/http';
 import { useAuth } from '@/context/AuthContext';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 
 export default function VerifyEmailPage() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
   const { user, logout } = useAuth();
 
   const resendMutation = useMutation<{ message: string }>({

@@ -134,7 +134,7 @@ export const Header = ({ isGuest = false, onSave }: HeaderProps) => {
                 <Lock className="w-4 h-4 mr-2" />
                 Save Draft
               </Button>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button
                   size="sm"
                   className="h-9 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4"

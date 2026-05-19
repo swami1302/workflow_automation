@@ -1,34 +1,52 @@
-export type WorkflowStatus = 'active' | 'inactive';
+export type WorkflowStatus = 'DRAFT' | 'ACTIVE';
 
-export type WorkflowType =
-  | 'Automation'
-  | 'Reporting'
-  | 'Monitoring'
-  | 'Maintenance'
-  | 'Integration'
-  | 'Custom';
+export interface WorkflowDefinition {
+  nodes: Record<string, unknown>[];
+  edges: Record<string, unknown>[];
+}
 
-export interface Workflow {
+export interface WorkflowListItem {
   id: string;
-  name: string;
+  title: string;
   status: WorkflowStatus;
-  nodeCount: number;
-  lastRunAt: string | null;
-  type: WorkflowType;
+  version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Workflow extends WorkflowListItem {
   userId: string;
+  definition: WorkflowDefinition;
 }
 
 export interface CreateWorkflowPayload {
-  name: string;
-  type?: WorkflowType;
+  title: string;
+  status?: WorkflowStatus;
+  definition?: WorkflowDefinition;
 }
 
 export interface UpdateWorkflowPayload {
-  name?: string;
-  type?: WorkflowType;
+  title?: string;
+  status?: WorkflowStatus;
+  definition?: WorkflowDefinition;
 }
+
+export interface CreateWorkflowResponse {
+  message: string;
+  workflow_uuid: string;
+}
+
+export interface UpdateWorkflowResponse {
+  message: string;
+  workflow_uuid: string;
+  version: number;
+}
+
+export interface DeleteWorkflowResponse {
+  message: string;
+}
+
+// ─── Node data types ──────────────────────────────────────────────────────────
 
 export interface BaseNodeData {
   label: string;
@@ -73,10 +91,10 @@ export interface DelayNodeData extends BaseNodeData {
   unit: 'Seconds' | 'Minutes' | 'Hours' | 'Days' | 'Months';
 }
 
-export type AppNodeData = 
-  | TriggerNodeData 
-  | HttpNodeData 
-  | BinaryNodeData 
-  | LogNodeData 
-  | DelayNodeData 
+export type AppNodeData =
+  | TriggerNodeData
+  | HttpNodeData
+  | BinaryNodeData
+  | LogNodeData
+  | DelayNodeData
   | BaseNodeData;

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useAuthApi, type SignupPayload } from '@/lib/api/auth';
+import { useAuthHttp, type SignupPayload } from '@/app/auth/action/http';
 import { usePostAuth } from '@/hooks/auth/usePostAuth';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { SignupSchema, type SignupFormValues } from '@/lib/validations';
@@ -19,7 +19,7 @@ import type { AuthResponse } from '@/lib/types/auth';
 import { SIGNUP_QUERY_KEY } from '@/lib/constants/queryKeys';
 
 export function SignupForm() {
-  const authApi = useAuthApi();
+  const authApi = useAuthHttp();
   const handlePostAuth = usePostAuth();
   const signupMutation = useMutation<AuthResponse, Error, SignupPayload>({
     mutationKey: [SIGNUP_QUERY_KEY],
