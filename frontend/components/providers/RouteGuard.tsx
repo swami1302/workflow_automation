@@ -10,10 +10,10 @@ import { ME_QUERY_KEY } from '@/lib/constants/queryKeys';
 // ─── Route definitions ────────────────────────────────────────────────────────
 
 // Public routes that bypass all auth checks (must be checked before PROTECTED_ROUTES)
-const PUBLIC_OVERRIDE_ROUTES = ['/workflow/demo'];
+const PUBLIC_OVERRIDE_ROUTES = ['/workflows/demo'];
 
 // Requires authenticated + email verified
-const PROTECTED_ROUTES = ['/workflows', '/workflow'];
+const PROTECTED_ROUTES = ['/workflows'];
 
 // Requires authenticated + email NOT yet verified (the "check your inbox" page)
 const VERIFICATION_PENDING_ROUTES = ['/auth/verify-email-pending'];

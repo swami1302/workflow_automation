@@ -240,6 +240,12 @@ const initialEdges: Edge[] = [
   { id: 'e1-2', source: 'trigger-1', target: 'exit-1', animated: true, type: 'custom' }
 ];
 
+// Definition payload for a brand-new workflow (used by the "Create workflow" flow on the list page)
+export const createInitialDefinition = () => ({
+  nodes: initialNodes.map((n) => ({ id: n.id, type: n.type, position: n.position, data: n.data })),
+  edges: initialEdges.map((e) => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, type: e.type })),
+});
+
 export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,

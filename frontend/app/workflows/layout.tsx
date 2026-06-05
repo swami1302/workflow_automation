@@ -3,7 +3,7 @@
 import { useWorkflowStore } from "@/store/useWorkflowStore";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
+export default function WorkflowsLayout({ children }: { children: React.ReactNode }) {
   const isWorkflowLoading = useWorkflowStore((state) => state.isWorkflowLoading);
 
   return (

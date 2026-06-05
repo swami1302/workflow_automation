@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as ms from 'ms';
 import { MailService } from '../mail/mail.service';
-import { UsersService } from '../users/users.service';
+import { UsersService, SafeUser } from '../users/users.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -27,11 +27,6 @@ export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }
-
-export type SafeUser = Omit<
-  User,
-  'password' | 'refreshToken' | 'emailVerificationToken' | 'forgotPasswordToken'
->;
 
 interface JwtPayload {
   sub: string;
@@ -72,17 +67,6 @@ export class AuthService {
     return { token, expiry };
   }
 
-  private stripSensitiveFields(user: User): SafeUser {
-    const {
-      password: _p,
-      refreshToken: _rt,
-      emailVerificationToken: _evt,
-      forgotPasswordToken: _fpt,
-      ...safe
-    } = user;
-    return safe;
-  }
-
   // ─── Signup ──────────────────────────────────────────────────────────────────
 
   async signup(
@@ -117,7 +101,7 @@ export class AuthService {
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
     return {
-      user: this.stripSensitiveFields(user),
+      user: this.usersService.toSafeUser(user),
       ...tokens,
       message: 'Account created. Please check your email to verify your address.',
     };
@@ -142,7 +126,7 @@ export class AuthService {
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
     return {
-      user: this.stripSensitiveFields(user),
+      user: this.usersService.toSafeUser(user),
       ...tokens,
     };
   }
@@ -177,16 +161,6 @@ export class AuthService {
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
     return tokens;
-  }
-
-  // ─── Me ───────────────────────────────────────────────────────────────────────
-
-  async getMe(userId: string): Promise<SafeUser> {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return this.stripSensitiveFields(user);
   }
 
   // ─── Resend verification ──────────────────────────────────────────────────────
@@ -263,6 +237,46 @@ export class AuthService {
     });
 
     return { message: 'Password reset successfully. Please log in with your new password.' };
+  }
+
+  // ─── Change password ──────────────────────────────────────────────────────────
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string } & TokenPair> {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Re-authenticate: holding a valid JWT is not proof you know the password
+    // (e.g. an unattended laptop). Sensitive actions re-verify it.
+    const passwordValid = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException('New password must be different from the current password');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, BCRYPT_SALT_ROUNDS);
+
+    // Rotate the refresh token: any other device's session dies (it holds the
+    // old refresh token), but THIS session stays alive with the fresh pair.
+    const tokens = this.generateTokens(user.id, user.email);
+    const hashedRt = await bcrypt.hash(tokens.refreshToken, BCRYPT_SALT_ROUNDS);
+
+    await this.usersService.updateById(user.id, {
+      password: hashedPassword,
+      refreshToken: hashedRt,
+    });
+
+    return {
+      message: 'Password changed successfully.',
+      ...tokens,
+    };
   }
 
   // ─── Email verification ───────────────────────────────────────────────────────

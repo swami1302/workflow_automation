@@ -40,7 +40,7 @@ export function useAuthHttp() {
       },
 
       me: async (): Promise<User> => {
-        const { data } = await axios.get<User>('/auth/me');
+        const { data } = await axios.get<User>('/users/me');
         return data;
       },
 

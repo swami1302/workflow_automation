@@ -10,6 +10,7 @@ import type {
   UpdateWorkflowPayload,
   UpdateWorkflowResponse,
   DeleteWorkflowResponse,
+  WorkflowStatus,
 } from '@/lib/types/workflow';
 
 export function useWorkflowHttp() {
@@ -34,6 +35,11 @@ export function useWorkflowHttp() {
 
       updateWorkflow: async (id: string, payload: UpdateWorkflowPayload): Promise<UpdateWorkflowResponse> => {
         const { data } = await axios.put<UpdateWorkflowResponse>(`/workflows/${id}`, payload);
+        return data;
+      },
+
+      updateWorkflowStatus: async (id: string, status: WorkflowStatus): Promise<UpdateWorkflowResponse> => {
+        const { data } = await axios.put<UpdateWorkflowResponse>(`/workflows/${id}`, { status });
         return data;
       },
 

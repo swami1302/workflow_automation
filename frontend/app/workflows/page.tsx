@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Plus,
   Search,
@@ -31,14 +32,22 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useWorkflowsApi } from "@/lib/api/workflows";
-import { WORKFLOWS_QUERY_KEY } from "@/lib/constants/queryKeys";
+import { useWorkflowHttp } from "@/app/workflows/action/http";
+import { WORKFLOWS_QUERY_KEY, WORKFLOW_CREATE_KEY } from "@/lib/constants/queryKeys";
+import { createInitialDefinition, useWorkflowStore } from "@/store/useWorkflowStore";
 import type { WorkflowListItem } from "@/lib/types/workflow";
 import { toast } from "sonner";
 
-function WorkflowsEmptyState() {
+function WorkflowsEmptyState({
+  onCreate,
+  isCreating,
+}: {
+  onCreate: () => void;
+  isCreating: boolean;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-5 text-center px-4">
       <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center">
@@ -50,12 +59,66 @@ function WorkflowsEmptyState() {
           Create your first workflow to start automating your tasks visually.
         </p>
       </div>
-      <Link href="/workflow/builder">
-        <Button className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold">
-          <Plus className="w-4 h-4" />
-          Create your first workflow
-        </Button>
-      </Link>
+      <Button
+        onClick={onCreate}
+        disabled={isCreating}
+        className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold"
+      >
+        {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        Create your first workflow
+      </Button>
+    </div>
+  );
+}
+
+function WorkflowsTableSkeleton() {
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader className="bg-slate-50/50">
+          <TableRow>
+            <TableHead className="min-w-[180px] text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Workflow Name
+            </TableHead>
+            <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Status
+            </TableHead>
+            <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Last Run
+            </TableHead>
+            <TableHead className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Version
+            </TableHead>
+            <TableHead className="text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell className="py-4">
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-2.5 w-16" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-3 w-14" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-10 rounded-full" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -92,10 +155,12 @@ function WorkflowRow({
   workflow,
   onToggleStatus,
   onDelete,
+  onEditNavigate,
 }: {
   workflow: WorkflowListItem;
   onToggleStatus: (id: string, current: WorkflowListItem["status"]) => void;
   onDelete: (id: string) => void;
+  onEditNavigate: () => void;
 }) {
   const isActive = workflow.status === "ACTIVE";
 
@@ -145,7 +210,7 @@ function WorkflowRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem asChild className="gap-2 cursor-pointer text-xs">
-              <Link href={`/workflow/builder?id=${workflow.id}`}>
+              <Link href={`/workflows/${workflow.id}`} onClick={onEditNavigate}>
                 <Edit2 className="w-3.5 h-3.5" /> Edit
               </Link>
             </DropdownMenuItem>
@@ -171,8 +236,10 @@ function WorkflowRow({
 
 export default function WorkflowsPage() {
   const [search, setSearch] = useState("");
-  const api = useWorkflowsApi();
+  const router = useRouter();
+  const { getWorkflows, createWorkflow, updateWorkflowStatus, deleteWorkflow } = useWorkflowHttp();
   const queryClient = useQueryClient();
+  const setWorkflowLoading = useWorkflowStore((state) => state.setWorkflowLoading);
 
   const {
     data: workflows,
@@ -181,12 +248,33 @@ export default function WorkflowsPage() {
     refetch,
   } = useQuery({
     queryKey: [WORKFLOWS_QUERY_KEY],
-    queryFn: api.list,
+    queryFn: getWorkflows,
+  });
+
+  // Created from the button click (an event handler) — not from a useEffect in the
+  // builder — so the workflow always exists before the builder page mounts.
+  const createMutation = useMutation({
+    mutationKey: [WORKFLOW_CREATE_KEY],
+    mutationFn: () =>
+      createWorkflow({
+        title: `Untitled Workflow (${new Date().toLocaleString()})`,
+        status: "DRAFT",
+        definition: createInitialDefinition(),
+      }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: [WORKFLOWS_QUERY_KEY] });
+      // Show the builder skeleton (rendered by the shared workflows layout) now,
+      // so it covers the route transition + the builder's initial GET. The builder
+      // page takes over this flag once it mounts and clears it when loaded.
+      setWorkflowLoading(true);
+      router.push(`/workflows/${res.workflow_uuid}`);
+    },
+    onError: () => toast.error("Failed to create workflow"),
   });
 
   const toggleStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: WorkflowListItem["status"] }) =>
-      api.updateStatus(id, status === "ACTIVE" ? "DRAFT" : "ACTIVE"),
+      updateWorkflowStatus(id, status === "ACTIVE" ? "DRAFT" : "ACTIVE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_QUERY_KEY] });
     },
@@ -194,7 +282,7 @@ export default function WorkflowsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: api.remove,
+    mutationFn: deleteWorkflow,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_QUERY_KEY] });
       toast.success("Workflow deleted");
@@ -224,15 +312,19 @@ export default function WorkflowsPage() {
                 className="pl-9 w-full sm:w-64 bg-slate-50 border-slate-200 h-9 text-sm focus-visible:ring-orange-500"
               />
             </div>
-            <Link href="/workflow/builder" className="w-full sm:w-auto">
-              <Button
-                size="sm"
-                className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold shadow-sm text-xs h-9 w-full sm:w-auto"
-              >
+            <Button
+              size="sm"
+              onClick={() => createMutation.mutate()}
+              disabled={createMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700 text-white gap-2 font-semibold shadow-sm text-xs h-9 w-full sm:w-auto"
+            >
+              {createMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
                 <Plus className="w-4 h-4" />
-                CREATE WORKFLOW
-              </Button>
-            </Link>
+              )}
+              CREATE WORKFLOW
+            </Button>
           </div>
         </header>
 
@@ -240,10 +332,7 @@ export default function WorkflowsPage() {
         <div className="flex-1 overflow-auto p-4 sm:p-8">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             {isLoading ? (
-              <div className="flex items-center justify-center py-24 gap-3 text-slate-400">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm">Loading workflows…</span>
-              </div>
+              <WorkflowsTableSkeleton />
             ) : isError ? (
               <WorkflowsErrorState onRetry={refetch} />
             ) : filtered.length === 0 ? (
@@ -253,7 +342,10 @@ export default function WorkflowsPage() {
                   <p className="text-xs text-slate-400">Try a different search term</p>
                 </div>
               ) : (
-                <WorkflowsEmptyState />
+                <WorkflowsEmptyState
+                  onCreate={() => createMutation.mutate()}
+                  isCreating={createMutation.isPending}
+                />
               )
             ) : (
               <div className="overflow-x-auto">
@@ -286,6 +378,7 @@ export default function WorkflowsPage() {
                           toggleStatusMutation.mutate({ id, status })
                         }
                         onDelete={(id) => deleteMutation.mutate(id)}
+                        onEditNavigate={() => setWorkflowLoading(true)}
                       />
                     ))}
                   </TableBody>

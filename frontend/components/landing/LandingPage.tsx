@@ -47,7 +47,7 @@ export function LandingPage() {
               The most intuitive visual builder to connect your apps, process data, and automate repetitive tasks in minutes.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-              <Link href="/workflow/demo">
+              <Link href="/workflows/demo">
                 <Button size="lg" className="bg-[#FF4500] hover:bg-[#E63E00] text-white h-16 px-12 text-xl font-black rounded-full shadow-2xl shadow-orange-200 transition-all hover:scale-[1.05] active:scale-[0.95] gap-2 group">
                   Try Demo
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
