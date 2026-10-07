@@ -34,6 +34,7 @@ type WorkflowStore = {
   deleteNode: (nodeId: string) => void;
   deleteBinaryNode: (nodeId: string, option: 'yes-path' | 'no-path' | 'both') => void;
   getLayoutedElements: () => void;
+  resetWorkflow: () => void;
 };
 
 const nodeWidth = 200;
@@ -243,7 +244,7 @@ const initialEdges: Edge[] = [
 // Definition payload for a brand-new workflow (used by the "Create workflow" flow on the list page)
 export const createInitialDefinition = () => ({
   nodes: initialNodes.map((n) => ({ id: n.id, type: n.type, position: n.position, data: n.data })),
-  edges: initialEdges.map((e) => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, type: e.type })),
+  edges: initialEdges.map((e) => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, type: e.type, animated: e.animated })),
 });
 
 export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
@@ -583,4 +584,13 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   setNodes: (nodes) => set({ nodes }),
 
   setEdges: (edges) => set({ edges }),
+
+  resetWorkflow: () => set({
+    nodes: initialNodes,
+    edges: initialEdges,
+    selectedNodeId: null,
+    selectedEdgeId: null,
+    workflowName: 'Untitled Workflow',
+    workflowId: null,
+  }),
 }));

@@ -18,6 +18,7 @@ import { useAuthHttp, type ResetPasswordPayload } from '@/app/auth/action/http';
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { ResetPasswordSchema, type ResetPasswordFormValues } from '@/lib/validations';
 import { RESET_PASSWORD_QUERY_KEY } from '@/lib/constants/queryKeys';
+import { ROUTES } from '@/lib/constants/routes';
 
 // ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
 
@@ -61,7 +62,7 @@ function ResetPasswordContent() {
         <CardFooter>
           <Button
             className="w-full bg-slate-900 hover:bg-slate-800"
-            onClick={() => router.push('/auth/forgot-password')}
+            onClick={() => router.push(ROUTES.forgotPassword)}
           >
             Request a new link
           </Button>
@@ -80,7 +81,7 @@ function ResetPasswordContent() {
           </CardDescription>
         </CardHeader>
         <CardFooter>
-          <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => router.push('/auth/login')}>
+          <Button className="w-full bg-orange-600 hover:bg-orange-700" onClick={() => router.push(ROUTES.login)}>
             Go to Login
           </Button>
         </CardFooter>
@@ -121,7 +122,7 @@ function ResetPasswordContent() {
               : 'Reset password'}
           </Button>
           <Link
-            href="/auth/login"
+            href={ROUTES.login}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
           >
             <ArrowLeft className="h-3 w-3" /> Back to login

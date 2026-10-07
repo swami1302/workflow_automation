@@ -4,6 +4,7 @@ import React from "react";
 import { Monitor, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ROUTES } from "@/lib/constants/routes";
 
 export const MobileViewGuard = () => {
   return (
@@ -20,7 +21,7 @@ export const MobileViewGuard = () => {
         FlowBuilder's visual editor requires a larger screen for the best experience. Please switch to a desktop or tablet to edit your workflows.
       </p>
 
-      <Link href="/workflows" className="w-full max-w-xs">
+      <Link href={ROUTES.workflows} className="w-full max-w-xs">
         <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-2xl h-14 font-black text-lg gap-2">
           <ArrowLeft className="w-5 h-5" />
           Back to Dashboard

@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { AllowUnverified } from '../common/decorators/allow-unverified.decorator';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { JwtUser } from './decorators/current-user.decorator';
@@ -50,6 +51,7 @@ export class AuthController {
 
   @Post('resend-verification')
   @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
   @HttpCode(HttpStatus.OK)
   resendVerification(@CurrentUser() user: JwtUser) {
     return this.authService.resendVerification(user.sub);

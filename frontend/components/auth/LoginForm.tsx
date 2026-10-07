@@ -18,6 +18,7 @@ import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { LoginSchema, type LoginFormValues } from '@/lib/validations';
 import type { AuthResponse } from '@/lib/types/auth';
 import { LOGIN_QUERY_KEY } from '@/lib/constants/queryKeys';
+import { ROUTES } from '@/lib/constants/routes';
 
 export function LoginForm() {
   const authApi = useAuthHttp();
@@ -59,7 +60,7 @@ export function LoginForm() {
         <div className="grid gap-2">
           <div className="flex items-center justify-between ml-1">
             <Label htmlFor="login-password" title="Password" className="font-bold text-slate-700">Password</Label>
-            <Link href="/auth/forgot-password" title="Forgot password" className="text-xs font-bold text-[#FF4500] hover:underline">Forgot password?</Link>
+            <Link href={ROUTES.forgotPassword} title="Forgot password" className="text-xs font-bold text-[#FF4500] hover:underline">Forgot password?</Link>
           </div>
           <Input 
             id="login-password" 

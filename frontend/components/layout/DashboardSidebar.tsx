@@ -23,9 +23,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { ROUTES } from "@/lib/constants/routes";
 
 const NAV_ITEMS = [
-  { name: "Workflows", href: "/workflows", icon: LayoutDashboard },
+  { name: "Workflows", href: ROUTES.workflows, icon: LayoutDashboard },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

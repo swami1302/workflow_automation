@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -31,6 +32,7 @@ export interface TokenPair {
 interface JwtPayload {
   sub: string;
   email: string;
+  isEmailVerified: boolean;
 }
 
 @Injectable()
@@ -44,17 +46,23 @@ export class AuthService {
 
   // ─── Token generation ────────────────────────────────────────────────────────
 
-  generateTokens(userId: string, email: string): TokenPair {
-    const payload: JwtPayload = { sub: userId, email };
+  generateTokens(
+    userId: string,
+    email: string,
+    isEmailVerified: boolean,
+  ): TokenPair {
+    const payload: JwtPayload = { sub: userId, email, isEmailVerified };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.config.get<string>('JWT_ACCESS_SECRET')!,
-      expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '15m') as ms.StringValue,
+      expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ??
+        '15m') as ms.StringValue,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET')!,
-      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d') as ms.StringValue,
+      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ??
+        '7d') as ms.StringValue,
     });
 
     return { accessToken, refreshToken };
@@ -96,14 +104,19 @@ export class AuthService {
       verificationUrl,
     );
 
-    const tokens = this.generateTokens(user.id, user.email);
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.isEmailVerified,
+    );
     const hashedRt = await bcrypt.hash(tokens.refreshToken, BCRYPT_SALT_ROUNDS);
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
     return {
       user: this.usersService.toSafeUser(user),
       ...tokens,
-      message: 'Account created. Please check your email to verify your address.',
+      message:
+        'Account created. Please check your email to verify your address.',
     };
   }
 
@@ -121,7 +134,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const tokens = this.generateTokens(user.id, user.email);
+    if (!user.isEmailVerified) {
+      throw new ForbiddenException(
+        'Please verify your email before logging in',
+      );
+    }
+
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.isEmailVerified,
+    );
     const hashedRt = await bcrypt.hash(tokens.refreshToken, BCRYPT_SALT_ROUNDS);
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
@@ -153,10 +176,16 @@ export class AuthService {
     if (!rtMatches) {
       // Token reuse detected — rotate and invalidate all sessions
       await this.usersService.updateById(user.id, { refreshToken: null });
-      throw new UnauthorizedException('Refresh token reuse detected. Please log in again.');
+      throw new UnauthorizedException(
+        'Refresh token reuse detected. Please log in again.',
+      );
     }
 
-    const tokens = this.generateTokens(user.id, user.email);
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.isEmailVerified,
+    );
     const hashedRt = await bcrypt.hash(tokens.refreshToken, BCRYPT_SALT_ROUNDS);
     await this.usersService.updateById(user.id, { refreshToken: hashedRt });
 
@@ -200,7 +229,10 @@ export class AuthService {
 
     // Always return success to avoid user enumeration
     if (!user) {
-      return { message: 'If an account with that email exists, a reset link has been sent.' };
+      return {
+        message:
+          'If an account with that email exists, a reset link has been sent.',
+      };
     }
 
     const token = crypto.randomBytes(32).toString('hex');
@@ -213,9 +245,16 @@ export class AuthService {
     });
 
     const resetUrl = `${this.config.get<string>('FRONTEND_URL')}/auth/reset-password?token=${token}`;
-    await this.mailService.sendPasswordResetEmail(user.email, user.name ?? user.email, resetUrl);
+    await this.mailService.sendPasswordResetEmail(
+      user.email,
+      user.name ?? user.email,
+      resetUrl,
+    );
 
-    return { message: 'If an account with that email exists, a reset link has been sent.' };
+    return {
+      message:
+        'If an account with that email exists, a reset link has been sent.',
+    };
   }
 
   // ─── Reset password ───────────────────────────────────────────────────────────
@@ -223,7 +262,11 @@ export class AuthService {
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     const user = await this.usersService.findByForgotPasswordToken(dto.token);
 
-    if (!user || !user.forgotPasswordExpiry || user.forgotPasswordExpiry < new Date()) {
+    if (
+      !user ||
+      !user.forgotPasswordExpiry ||
+      user.forgotPasswordExpiry < new Date()
+    ) {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
@@ -236,7 +279,10 @@ export class AuthService {
       refreshToken: null, // invalidate all sessions
     });
 
-    return { message: 'Password reset successfully. Please log in with your new password.' };
+    return {
+      message:
+        'Password reset successfully. Please log in with your new password.',
+    };
   }
 
   // ─── Change password ──────────────────────────────────────────────────────────
@@ -252,20 +298,32 @@ export class AuthService {
 
     // Re-authenticate: holding a valid JWT is not proof you know the password
     // (e.g. an unattended laptop). Sensitive actions re-verify it.
-    const passwordValid = await bcrypt.compare(dto.currentPassword, user.password);
+    const passwordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
     if (!passwordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     if (dto.currentPassword === dto.newPassword) {
-      throw new BadRequestException('New password must be different from the current password');
+      throw new BadRequestException(
+        'New password must be different from the current password',
+      );
     }
 
-    const hashedPassword = await bcrypt.hash(dto.newPassword, BCRYPT_SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(
+      dto.newPassword,
+      BCRYPT_SALT_ROUNDS,
+    );
 
     // Rotate the refresh token: any other device's session dies (it holds the
     // old refresh token), but THIS session stays alive with the fresh pair.
-    const tokens = this.generateTokens(user.id, user.email);
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.isEmailVerified,
+    );
     const hashedRt = await bcrypt.hash(tokens.refreshToken, BCRYPT_SALT_ROUNDS);
 
     await this.usersService.updateById(user.id, {
@@ -282,7 +340,9 @@ export class AuthService {
   // ─── Email verification ───────────────────────────────────────────────────────
 
   async verifyEmail(dto: VerifyEmailDto): Promise<{ message: string }> {
-    const user = await this.usersService.findByEmailVerificationToken(dto.token);
+    const user = await this.usersService.findByEmailVerificationToken(
+      dto.token,
+    );
 
     if (!user) {
       throw new BadRequestException('Invalid or expired verification token');
@@ -292,8 +352,13 @@ export class AuthService {
       return { message: 'Email is already verified' };
     }
 
-    if (!user.emailVerificationExpiry || user.emailVerificationExpiry < new Date()) {
-      throw new UnauthorizedException('Verification token has expired. Please request a new one.');
+    if (
+      !user.emailVerificationExpiry ||
+      user.emailVerificationExpiry < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Verification token has expired. Please request a new one.',
+      );
     }
 
     await this.usersService.updateById(user.id, {

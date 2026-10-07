@@ -192,6 +192,10 @@ const WorkflowBuilderContent = () => {
         edgeTypes={edgeTypes}
         colorMode="light"
         fitView
+        connectOnClick={false}
+        defaultEdgeOptions={{ reconnectable: false }}
+        nodesDraggable={false}
+        nodesConnectable={false}
       >
         <Background />
         <MiniMap

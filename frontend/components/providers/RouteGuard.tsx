@@ -6,20 +6,21 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthHttp } from '@/app/auth/action/http';
 import { ME_QUERY_KEY } from '@/lib/constants/queryKeys';
+import { ROUTES } from '@/lib/constants/routes';
 
 // ─── Route definitions ────────────────────────────────────────────────────────
 
 // Public routes that bypass all auth checks (must be checked before PROTECTED_ROUTES)
-const PUBLIC_OVERRIDE_ROUTES = ['/workflows/demo'];
+const PUBLIC_OVERRIDE_ROUTES = [ROUTES.workflowsDemo];
 
 // Requires authenticated + email verified
-const PROTECTED_ROUTES = ['/workflows'];
+const PROTECTED_ROUTES = [ROUTES.workflows];
 
 // Requires authenticated + email NOT yet verified (the "check your inbox" page)
-const VERIFICATION_PENDING_ROUTES = ['/auth/verify-email-pending'];
+const VERIFICATION_PENDING_ROUTES = [ROUTES.verifyEmailPending];
 
 // Requires NOT authenticated (login/signup)
-const GUEST_ONLY_ROUTES = ['/auth/login'];
+const GUEST_ONLY_ROUTES = [ROUTES.login];
 
 // ─── Route type resolution ────────────────────────────────────────────────────
 
@@ -65,18 +66,18 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
 
     switch (routeType) {
       case 'protected':
-        if (!isAuthenticated) { router.replace('/auth/login'); return; }
-        if (!isVerified) { router.replace('/auth/verify-email-pending'); return; }
+        if (!isAuthenticated) { router.replace(ROUTES.login); return; }
+        if (!isVerified) { router.replace(ROUTES.verifyEmailPending); return; }
         break;
 
       case 'verification-pending':
-        if (!isAuthenticated) { router.replace('/auth/login'); return; }
-        if (isVerified) { router.replace('/workflows'); return; }
+        if (!isAuthenticated) { router.replace(ROUTES.login); return; }
+        if (isVerified) { router.replace(ROUTES.workflows); return; }
         break;
 
       case 'guest-only':
         if (isAuthenticated) {
-          router.replace(isVerified ? '/workflows' : '/auth/verify-email-pending');
+          router.replace(isVerified ? ROUTES.workflows : ROUTES.verifyEmailPending);
         }
         break;
 

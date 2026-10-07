@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthHttp } from '@/app/auth/action/http';
 import { useAuth } from '@/context/AuthContext';
+import { ROUTES } from '@/lib/constants/routes';
 
 // ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
 
@@ -73,7 +74,7 @@ function VerifyEmailContent() {
         <CardFooter>
           <Button
             className="w-full bg-slate-900 hover:bg-slate-800"
-            onClick={() => router.push('/workflows')}
+            onClick={() => router.push(ROUTES.workflows)}
           >
             Go to Workflows
           </Button>
@@ -99,7 +100,7 @@ function VerifyEmailContent() {
       <CardFooter className="flex flex-col gap-3">
         <Button
           className="w-full bg-slate-900 hover:bg-slate-800"
-          onClick={() => router.push('/auth/login')}
+          onClick={() => router.push(ROUTES.login)}
         >
           Back to Login
         </Button>

@@ -7,6 +7,7 @@ import { Zap, LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
 
 function getInitials(name?: string | null, email?: string): string {
@@ -47,7 +48,7 @@ export function SiteHeader() {
   return (
     <header className="w-full shrink-0 relative z-50">
       <nav className="h-24 flex items-center justify-between px-6 md:px-12 max-w-7xl mx-auto w-full">
-        <Link href="/" className="flex items-center gap-2 z-50">
+        <Link href={ROUTES.home} className="flex items-center gap-2 z-50">
           <div className="w-9 h-9 rounded-lg bg-[#FF4500] flex items-center justify-center shadow-lg shadow-orange-200">
             <Zap className="w-5 h-5 text-white fill-white" />
           </div>
@@ -89,7 +90,7 @@ export function SiteHeader() {
                     </span>
                   </div>
                 </div>
-                <Link href="/workflows">
+                <Link href={ROUTES.workflows}>
                   <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 font-bold h-11">
                     Dashboard
                   </Button>
@@ -106,12 +107,12 @@ export function SiteHeader() {
             ) : (
               <>
                 <Link
-                  href="/auth/login"
+                  href={ROUTES.login}
                   className="text-sm font-bold text-slate-600 hover:text-[#FF4500] transition-colors px-4"
                 >
                   Sign In
                 </Link>
-                <Link href="/auth/login">
+                <Link href={ROUTES.login}>
                   <Button className="bg-[#FF4500] hover:bg-[#E63E00] text-white rounded-full px-7 font-bold h-11 shadow-lg shadow-orange-200">
                     Start for free
                   </Button>
@@ -169,7 +170,7 @@ export function SiteHeader() {
                         <span className="text-sm font-medium text-slate-500">Logged in</span>
                       </div>
                     </div>
-                    <Link href="/workflows" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+                    <Link href={ROUTES.workflows} onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-6 font-black h-14 text-lg">
                         Go to Dashboard
                       </Button>
@@ -188,12 +189,12 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <>
-                    <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+                    <Link href={ROUTES.login} onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <Button variant="outline" className="w-full border-2 border-slate-200 text-slate-900 hover:bg-slate-50 rounded-2xl font-black h-14 text-lg">
                         Sign In
                       </Button>
                     </Link>
-                    <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+                    <Link href={ROUTES.login} onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <Button className="w-full bg-[#FF4500] hover:bg-[#E63E00] text-white rounded-2xl px-7 font-black h-14 text-lg shadow-xl shadow-orange-200">
                         Start for free
                       </Button>

@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
+import { AllowUnverified } from '../common/decorators/allow-unverified.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -11,6 +20,7 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
   @HttpCode(HttpStatus.OK)
   getMe(@CurrentUser() user: JwtUser) {
     return this.usersService.getProfile(user.sub);

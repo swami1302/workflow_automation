@@ -1,5 +1,6 @@
 "use client";
 
+import { useLayoutEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/builder/Sidebar";
 import { WorkflowBuilder } from "@/components/builder/WorkflowBuilder";
@@ -9,6 +10,14 @@ import { useWorkflowStore } from "@/store/useWorkflowStore";
 
 export default function DemoPage() {
   const selectedNodeId = useWorkflowStore((state) => state.selectedNodeId);
+  const resetWorkflow = useWorkflowStore((state) => state.resetWorkflow);
+
+  // This page is public — the workflow store is a shared singleton, so
+  // without this an authed user who was just editing a real workflow
+  // would see that private graph rendered here on a guest-accessible route.
+  useLayoutEffect(() => {
+    resetWorkflow();
+  }, [resetWorkflow]);
 
   return (
     <>

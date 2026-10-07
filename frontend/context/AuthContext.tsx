@@ -61,6 +61,12 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const logout = useCallback(() => {
+    // Idempotency guard: queryClient.clear() below causes any still-mounted
+    // query to refetch immediately with no token, which 401s and calls
+    // logout() again via the axios interceptor. Without this check that
+    // second call re-clears the cache and can cascade further.
+    if (!TokenStorage.getAccessToken() && !TokenStorage.getRefreshToken()) return;
+
     TokenStorage.clearAll();
     setUser(null);
     queryClient.clear();

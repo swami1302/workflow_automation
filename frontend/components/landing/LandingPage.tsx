@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Zap, Shield, Globe, Cpu, ArrowRight, LayoutDashboard, LogOut, Check } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
 
 function getInitials(name?: string | null, email?: string): string {
@@ -47,13 +48,13 @@ export function LandingPage() {
               The most intuitive visual builder to connect your apps, process data, and automate repetitive tasks in minutes.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-              <Link href="/workflows/demo">
+              <Link href={ROUTES.workflowsDemo}>
                 <Button size="lg" className="bg-[#FF4500] hover:bg-[#E63E00] text-white h-16 px-12 text-xl font-black rounded-full shadow-2xl shadow-orange-200 transition-all hover:scale-[1.05] active:scale-[0.95] gap-2 group">
                   Try Demo
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link href={isAuthenticated ? "/workflows" : "/login"}>
+              <Link href={isAuthenticated ? ROUTES.workflows : ROUTES.login}>
                 <Button size="lg" variant="outline" className="h-16 px-12 text-xl font-black rounded-full border-2 border-slate-200 hover:border-slate-300 transition-all bg-white/50 backdrop-blur-sm">
                   Start for free
                 </Button>
@@ -134,7 +135,7 @@ export function LandingPage() {
             <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-8 relative z-10">
               Ready to automate <br />your next big idea?
             </h2>
-            <Link href={isAuthenticated ? "/workflows" : "/login"} className="relative z-10">
+            <Link href={isAuthenticated ? ROUTES.workflows : ROUTES.login} className="relative z-10">
               <Button size="lg" className="bg-[#FF4500] hover:bg-[#E63E00] text-white h-16 px-12 text-xl font-black rounded-full shadow-2xl shadow-orange-900/50 transition-all hover:scale-[1.05]">
                 Get Started Now
               </Button>

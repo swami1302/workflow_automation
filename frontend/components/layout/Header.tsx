@@ -14,6 +14,7 @@ import { Play, Save, Workflow, ChevronLeft, Lock, Pencil } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useWorkflowStore } from "@/store/useWorkflowStore";
+import { ROUTES } from "@/lib/constants/routes";
 import { toast } from "sonner";
 
 interface HeaderProps {
@@ -34,7 +35,7 @@ export const Header = ({ isGuest = false, onSave }: HeaderProps) => {
     if (isGuest) {
       toast("Create a free account to save your workflows", {
         description: "Your work is safe in this session — sign up to keep it.",
-        action: { label: "Sign Up", onClick: () => (window.location.href = "/login") },
+        action: { label: "Sign Up", onClick: () => (window.location.href = ROUTES.login) },
       });
       return;
     }
@@ -56,7 +57,7 @@ export const Header = ({ isGuest = false, onSave }: HeaderProps) => {
     setEditingName(false);
   };
 
-  const backHref = isGuest ? "/" : "/workflows";
+  const backHref = isGuest ? ROUTES.home : ROUTES.workflows;
 
   return (
     <>
@@ -134,7 +135,7 @@ export const Header = ({ isGuest = false, onSave }: HeaderProps) => {
                 <Lock className="w-4 h-4 mr-2" />
                 Save Draft
               </Button>
-              <Link href="/auth/login">
+              <Link href={ROUTES.login}>
                 <Button
                   size="sm"
                   className="h-9 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4"

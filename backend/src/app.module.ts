@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './database/prisma.module';
+import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { WorkflowsModule } from './workflows/workflows.module';
 
@@ -12,6 +13,7 @@ import { WorkflowsModule } from './workflows/workflows.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    RedisModule,
     UsersModule,
     AuthModule,
     WorkflowsModule,

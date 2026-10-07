@@ -11,6 +11,7 @@ import { Sidebar } from "@/components/builder/Sidebar";
 import { WorkflowBuilder } from "@/components/builder/WorkflowBuilder";
 import { BuilderNodePanel } from "@/components/builder/BuilderNodePanel";
 import { MobileViewGuard } from "@/components/builder/MobileViewGuard";
+import { QueryErrorBoundary } from "@/components/query/QueryErrorBoundary";
 import { useWorkflowStore } from "@/store/useWorkflowStore";
 import { useWorkflowHttp } from "@/app/workflows/action/http";
 import { useQueryEvents } from "@/hooks/useQueryEvents";
@@ -26,6 +27,7 @@ export default function BuilderPage() {
   const nodes = useWorkflowStore((state) => state.nodes);
   const edges = useWorkflowStore((state) => state.edges);
   const workflowName = useWorkflowStore((state) => state.workflowName);
+  const loadedWorkflowId = useWorkflowStore((state) => state.workflowId);
   const setNodes = useWorkflowStore((state) => state.setNodes);
   const setEdges = useWorkflowStore((state) => state.setEdges);
   const setWorkflowId = useWorkflowStore((state) => state.setWorkflowId);
@@ -35,7 +37,12 @@ export default function BuilderPage() {
   const { getWorkflow, updateWorkflow } = useWorkflowHttp();
 
   // ── Load workflow ───────────────────────────────────────────────────────────
+  // Hydrate the canvas only once per workflow id. A background refetch
+  // (window focus, reconnect) still updates react-query's cache, but we
+  // don't re-apply it here — otherwise it would silently overwrite whatever
+  // the user has edited locally since the initial load.
   const onWorkflowLoaded = (data: Workflow) => {
+    if (loadedWorkflowId === data.id) return;
     setWorkflowId(data.id);
     setWorkflowName(data.title);
     setNodes(data.definition.nodes as Node[]);
@@ -72,11 +79,15 @@ export default function BuilderPage() {
   });
 
   const handleSave = () => {
+    if (loadedWorkflowId !== workflowId) {
+      toast.error("Workflow hasn't finished loading — can't save yet");
+      return;
+    }
     saveMutation.mutate({
       title: workflowName,
       definition: {
         nodes: nodes.map((n) => ({ id: n.id, type: n.type, position: n.position, data: n.data })),
-        edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, type: e.type })),
+        edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, type: e.type, animated: e.animated })),
       },
     });
   };
@@ -84,14 +95,20 @@ export default function BuilderPage() {
   return (
     <>
       <MobileViewGuard />
-      <main className="flex flex-col h-screen w-screen bg-white font-sans antialiased overflow-hidden">
-        <Header onSave={handleSave} />
-        <section className="flex flex-1 relative overflow-hidden">
-          <BuilderNodePanel />
-          <WorkflowBuilder />
-          {selectedNodeId && <Sidebar />}
-        </section>
-      </main>
+      <QueryErrorBoundary
+        isError={query.isError}
+        error={query.error}
+        onRetry={() => query.refetch()}
+      >
+        <main className="flex flex-col h-screen w-screen bg-white font-sans antialiased overflow-hidden">
+          <Header onSave={handleSave} />
+          <section className="flex flex-1 relative overflow-hidden">
+            <BuilderNodePanel />
+            <WorkflowBuilder />
+            {selectedNodeId && <Sidebar />}
+          </section>
+        </main>
+      </QueryErrorBoundary>
     </>
   );
 }

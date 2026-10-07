@@ -92,6 +92,7 @@ export function AxiosProvider({ children }: { children: React.ReactNode }) {
           return new Promise<string>((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           }).then((newToken) => {
+            original._retry = true;
             original.headers.Authorization = `Bearer ${newToken}`;
             return instance(original);
           });

@@ -39,6 +39,7 @@ import { useWorkflowHttp } from "@/app/workflows/action/http";
 import { WORKFLOWS_QUERY_KEY, WORKFLOW_CREATE_KEY } from "@/lib/constants/queryKeys";
 import { createInitialDefinition, useWorkflowStore } from "@/store/useWorkflowStore";
 import type { WorkflowListItem } from "@/lib/types/workflow";
+import { ROUTES } from "@/lib/constants/routes";
 import { toast } from "sonner";
 
 function WorkflowsEmptyState({
@@ -210,7 +211,7 @@ function WorkflowRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem asChild className="gap-2 cursor-pointer text-xs">
-              <Link href={`/workflows/${workflow.id}`} onClick={onEditNavigate}>
+              <Link href={ROUTES.workflowDetail(workflow.id)} onClick={onEditNavigate}>
                 <Edit2 className="w-3.5 h-3.5" /> Edit
               </Link>
             </DropdownMenuItem>
@@ -267,7 +268,7 @@ export default function WorkflowsPage() {
       // so it covers the route transition + the builder's initial GET. The builder
       // page takes over this flag once it mounts and clears it when loaded.
       setWorkflowLoading(true);
-      router.push(`/workflows/${res.workflow_uuid}`);
+      router.push(ROUTES.workflowDetail(res.workflow_uuid));
     },
     onError: () => toast.error("Failed to create workflow"),
   });

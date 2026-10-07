@@ -16,6 +16,7 @@ import { useAuthHttp, type ForgotPasswordPayload } from '@/app/auth/action/http'
 import { useMutationEvents } from '@/hooks/useMutationEvents';
 import { ForgotPasswordSchema, type ForgotPasswordFormValues } from '@/lib/validations';
 import { FORGOT_PASSWORD_QUERY_KEY } from '@/lib/constants/queryKeys';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ForgotPasswordPage() {
   const authApi = useAuthHttp();
@@ -86,7 +87,7 @@ export default function ForgotPasswordPage() {
                 </Button>
               )}
               <Link
-                href="/auth/login"
+                href={ROUTES.login}
                 className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
               >
                 <ArrowLeft className="h-3 w-3" /> Back to login

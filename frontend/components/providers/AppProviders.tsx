@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthContextProvider } from '@/context/AuthContext';
 import { AxiosProvider } from '@/context/AxiosContext';
 import { RouteGuard } from './RouteGuard';
+import { UserSync } from './UserSync';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -24,6 +25,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
         <AxiosProvider>
+          <UserSync />
           <RouteGuard>
             {children}
           </RouteGuard>
